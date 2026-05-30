@@ -6,623 +6,447 @@
 <title>FlashFly — Flash Flight Deals from Texas</title>
 <meta name="description" content="Automated flash flight deals from SAT, AUS & IAH. Real prices. Updated every 4 hours."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,700;1,900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet"/>
 <style>
-/* ── DESIGN TOKENS ──────────────────────────────────────── */
 :root {
-  /* Deep midnight sky — travel, not finance */
-  --bg:      #060810;
-  --bg-2:    #0b0f1a;
-  --bg-3:    #111827;
-  --bg-card: #0e1422;
+  --white:   #ffffff;
+  --off:     #f8f7f5;
+  --off2:    #f0ede8;
+  --gray-50: #f9fafb;
+  --gray-100:#f3f4f6;
+  --gray-200:#e5e7eb;
+  --gray-400:#9ca3af;
+  --gray-500:#6b7280;
+  --gray-700:#374151;
+  --gray-900:#111827;
 
-  /* Text */
-  --t1: #f0ede6;
-  --t2: #8b95a1;
-  --t3: #4a5568;
+  --flash:  #ff4500;   /* deep energized orange-red */
+  --flash2: #ff6b35;
+  --hot:    #f59e0b;
+  --deal:   #0ea5e9;
+  --green:  #10b981;
+  --red:    #ef4444;
 
-  /* 🔥 FLASH: high-voltage coral-orange — urgency + warmth */
-  --flash:    #ff5e3a;
-  --flash-2:  #ff7f5c;
-  --flash-bg: rgba(255,94,58,0.10);
-  --flash-glow: rgba(255,94,58,0.22);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 20px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
 
-  /* 💛 HOT: amber-gold */
-  --hot:    #f5a623;
-  --hot-bg: rgba(245,166,35,0.09);
+  --f-head: 'Poppins', sans-serif;
+  --f-body: 'Inter', sans-serif;
 
-  /* ✈️ DEAL: electric sky blue */
-  --deal:    #38bdf8;
-  --deal-bg: rgba(56,189,248,0.09);
-
-  /* ✅ NONSTOP / live */
-  --green:    #34d399;
-  --green-bg: rgba(52,211,153,0.09);
-  --green-glow: rgba(52,211,153,0.3);
-
-  /* Danger */
-  --red:    #f87171;
-
-  /* Fonts */
-  --f-display: 'Bebas Neue', sans-serif;
-  --f-label:   'Barlow Condensed', sans-serif;
-  --f-body:    'DM Sans', sans-serif;
-
-  /* Motion */
-  --ease:   cubic-bezier(0.16, 1, 0.3, 1);
   --spring: cubic-bezier(0.22, 1, 0.36, 1);
-  --fast:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── RESET ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--f-body);
-  background: var(--bg);
-  color: var(--t1);
-  overflow-x: hidden;
+  background: var(--white);
+  color: var(--gray-900);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 a { color: inherit; text-decoration: none; }
-button { cursor: pointer; font: inherit; border: none; }
+button { cursor: pointer; font: inherit; border: none; background: none; }
 
 /* ── TICKER ─────────────────────────────────────────────── */
 .ticker {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 300;
-  height: 36px;
-  background: linear-gradient(90deg, #0f1a0f 0%, #0d160d 100%);
-  border-bottom: 1px solid rgba(52,211,153,0.18);
+  height: 38px;
+  background: var(--flash);
   display: flex;
   align-items: center;
   overflow: hidden;
+  position: relative;
 }
 .ticker::before, .ticker::after {
   content: '';
-  position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none;
+  position: absolute; top: 0; bottom: 0; width: 60px; z-index: 2; pointer-events: none;
 }
-.ticker::before { left: 0;  background: linear-gradient(to right, #0f1a0f, transparent); }
-.ticker::after  { right: 0; background: linear-gradient(to left,  #0f1a0f, transparent); }
+.ticker::before { left:  0; background: linear-gradient(to right, var(--flash), transparent); }
+.ticker::after  { right: 0; background: linear-gradient(to left,  var(--flash), transparent); }
 .ticker-track {
-  display: flex;
-  white-space: nowrap;
-  animation: belt 55s linear infinite;
-  will-change: transform;
+  display: flex; white-space: nowrap;
+  animation: belt 50s linear infinite;
 }
 @keyframes belt { to { transform: translateX(-50%); } }
 .t-item {
-  font-family: var(--f-label);
-  font-weight: 700;
+  font-family: var(--f-body);
   font-size: 12px;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--green);
-  padding: 0 22px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  color: #fff;
+  padding: 0 20px;
+  display: flex; align-items: center; gap: 6px;
+  opacity: 0.95;
 }
-.t-item .tp { color: var(--flash); }
-.t-item::after { content: '◆'; font-size: 4px; opacity: 0.3; margin-left: 6px; }
+.t-item .tp { color: #ffe066; }
+.t-item::after { content: '•'; opacity: 0.4; margin-left: 8px; }
 
-/* ── NAV ────────────────────────────────────────────────── */
+/* ── NAV ─────────────────────────────────────────────────── */
 .nav {
-  position: fixed;
-  top: 36px; left: 0; right: 0;
-  z-index: 200;
-  height: 62px;
-  padding: 0 clamp(16px, 5vw, 60px);
+  position: sticky;
+  top: 0; z-index: 100;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--gray-200);
+  height: 64px;
+  padding: 0 clamp(16px,5vw,56px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(6,8,16,0.93);
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  transition: background 0.3s;
 }
 .logo {
-  font-family: var(--f-display);
-  font-size: 28px;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
+  font-family: var(--f-head);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--gray-900);
 }
-.logo-f { color: var(--flash); }
-.logo-l { color: var(--t1); }
+.logo span { color: var(--flash); }
 
-.nav-pill {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(52,211,153,0.08);
-  border: 1px solid rgba(52,211,153,0.18);
-  border-radius: 100px;
-  padding: 5px 14px 5px 10px;
-  font-family: var(--f-label);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--green);
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-live {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--green);
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 5px 12px; border-radius: 100px;
 }
-.pulse-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 0 0 var(--green-glow);
-  animation: pulse-ring 2s ease-out infinite;
+.dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  animation: dotpulse 2s ease-out infinite;
 }
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 var(--green-glow); }
-  70%  { box-shadow: 0 0 0 7px rgba(52,211,153,0); }
-  100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+@keyframes dotpulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+  50%      { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
 }
+.nav-btn {
+  font-size: 13px; font-weight: 700;
+  background: var(--flash); color: #fff;
+  padding: 10px 22px; border-radius: 8px;
+  transition: background 0.15s, transform 0.15s var(--spring);
+}
+.nav-btn:hover { background: #e63e00; transform: translateY(-1px); }
 
-.nav-cta {
-  font-family: var(--f-label);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--flash);
-  color: #fff;
-  padding: 10px 24px;
-  border-radius: 4px;
-  transition: background 0.15s, transform 0.2s var(--spring), box-shadow 0.2s;
-}
-.nav-cta:hover {
-  background: var(--flash-2);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px var(--flash-glow);
-}
-
-/* ── HERO ────────────────────────────────────────────────── */
+/* ── HERO ─────────────────────────────────────────────────── */
 .hero {
-  min-height: 100svh;
-  padding-top: 98px;
+  background: var(--off);
+  padding: clamp(56px,8vw,96px) clamp(16px,5vw,56px) 0;
+  overflow: hidden;
+  position: relative;
+}
+.hero-inner {
+  max-width: 1280px; margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
-  position: relative;
-  overflow: hidden;
-}
-@media(max-width: 900px) { .hero { grid-template-columns: 1fr; } }
-
-/* Left: copy */
-.hero-copy {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(40px, 6vw, 80px) clamp(16px, 5vw, 60px);
-  position: relative;
-  z-index: 2;
-}
-
-/* Right: destination mosaic */
-.hero-mosaic {
-  position: relative;
-  overflow: hidden;
-}
-.hero-mosaic::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, var(--bg) 0%, transparent 25%, transparent 75%, var(--bg) 100%),
-              linear-gradient(to bottom, transparent 0%, rgba(6,8,16,0.6) 100%);
-  z-index: 1;
-}
-.mosaic-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  height: 100%;
-  min-height: 500px;
-  gap: 3px;
-}
-.mosaic-img {
-  background-size: cover;
-  background-position: center;
-  transition: transform 8s linear;
-}
-.mosaic-img:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80'); }
-.mosaic-img:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80'); }
-.mosaic-img:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=600&q=80'); }
-.mosaic-img:nth-child(4) { background-image: url('https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=600&q=80'); }
-
-.hero-bg-glow {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 120% 80% at -10% 110%, rgba(255,94,58,0.18) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 60% at 110% 0%,   rgba(56,189,248,0.10) 0%, transparent 45%);
-  pointer-events: none;
-  z-index: 1;
-}
-.hero-scan {
-  position: absolute;
-  left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent 0%, rgba(255,94,58,0.5) 50%, transparent 100%);
-  animation: hscan 5s ease-in-out infinite;
-  z-index: 2; pointer-events: none;
-}
-@keyframes hscan {
-  0%   { top: 20%; opacity: 0; }
-  8%   { opacity: 1; }
-  92%  { opacity: 1; }
-  100% { top: 88%; opacity: 0; }
-}
-
-.hero-eyebrow {
-  display: flex;
+  gap: 48px;
   align-items: center;
-  gap: 10px;
-  font-family: var(--f-label);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--flash);
+}
+@media(max-width:860px){ .hero-inner { grid-template-columns: 1fr; } }
+
+.hero-copy {}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff2ee; color: var(--flash);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 100px;
+  border: 1px solid #fecdb8;
   margin-bottom: 20px;
-  opacity: 0;
-  animation: floatUp 0.7s var(--ease) 0.05s forwards;
 }
-.eyebrow-bar { width: 28px; height: 2px; background: var(--flash); display: block; }
-
 .hero-h1 {
-  font-family: var(--f-display);
-  font-size: clamp(64px, 12vw, 160px);
-  line-height: 0.88;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  margin-bottom: 28px;
-  opacity: 0;
-  animation: floatUp 0.85s var(--ease) 0.1s forwards;
+  font-family: var(--f-head);
+  font-size: clamp(44px,6vw,76px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--gray-900);
+  margin-bottom: 20px;
 }
-.h1-a { display: block; color: var(--t1); }
-.h1-b {
-  display: block;
-  color: transparent;
-  -webkit-text-stroke: 2px var(--deal);
-  /* Animated gradient stroke via pseudo */
-}
-.h1-c {
-  display: block;
-  background: linear-gradient(135deg, var(--flash) 0%, var(--hot) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+.hero-h1 .accent { color: var(--flash); }
+.hero-h1 .light  { font-weight: 300; color: var(--gray-500); }
 
-.hero-sub {
-  font-size: clamp(15px, 1.6vw, 18px);
+.hero-p {
+  font-size: clamp(15px,1.5vw,18px);
+  font-weight: 400;
   line-height: 1.7;
-  color: var(--t2);
-  max-width: 480px;
-  margin-bottom: 36px;
-  opacity: 0;
-  animation: floatUp 0.85s var(--ease) 0.18s forwards;
-}
-.hero-sub strong { color: var(--t1); font-weight: 600; }
-
-.airports {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 36px;
-  opacity: 0;
-  animation: floatUp 0.85s var(--ease) 0.26s forwards;
-}
-.apt {
-  padding: 9px 14px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
-  display: flex; flex-direction: column; gap: 2px;
-  transition: border-color 0.2s, transform 0.25s var(--spring), box-shadow 0.25s;
-  cursor: default;
-}
-.apt:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
-.apt.star { border-color: rgba(255,94,58,0.3); background: rgba(255,94,58,0.07); }
-.apt.star:hover { box-shadow: 0 12px 30px var(--flash-glow); }
-.apt-code {
-  font-family: var(--f-display);
-  font-size: 26px; line-height: 1; letter-spacing: 0.04em;
-}
-.apt.star .apt-code { color: var(--flash); }
-.apt-city {
-  font-family: var(--f-label);
-  font-size: 9px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--t3);
-}
-.apt.star .apt-city { color: rgba(255,94,58,0.6); }
-
-.hero-btns {
-  display: flex; gap: 12px; flex-wrap: wrap;
-  opacity: 0;
-  animation: floatUp 0.85s var(--ease) 0.34s forwards;
-}
-.btn-primary {
-  font-family: var(--f-label);
-  font-weight: 700; font-size: 15px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  background: linear-gradient(135deg, var(--flash) 0%, #ff3d1f 100%);
-  color: #fff; padding: 14px 32px; border-radius: 4px;
-  transition: transform 0.2s var(--spring), box-shadow 0.2s;
-  box-shadow: 0 4px 20px var(--flash-glow);
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px var(--flash-glow); }
-.btn-ghost {
-  font-family: var(--f-label);
-  font-weight: 700; font-size: 15px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  background: transparent; color: var(--t2);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 14px 24px; border-radius: 4px;
-  transition: all 0.15s;
-}
-.btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: var(--t1); }
-
-/* ── LIVE STATS STRIP ────────────────────────────────────── */
-.stats-strip {
-  background: var(--bg-2);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.stats-inner {
-  max-width: 1400px; margin: 0 auto;
-  padding: 0 clamp(16px,5vw,60px);
-  display: grid;
-  grid-template-columns: repeat(5,1fr);
-}
-@media(max-width:600px){ .stats-inner { grid-template-columns: repeat(3,1fr); } }
-.stat { padding: 20px 18px; border-right: 1px solid rgba(255,255,255,0.05); }
-.stat:last-child { border-right: none; }
-.stat-n {
-  font-family: var(--f-display);
-  font-size: 36px; line-height: 1; letter-spacing: 0.02em;
-  margin-bottom: 3px;
-}
-.stat-n.fire { color: var(--flash); }
-.stat-n.sky  { color: var(--deal); }
-.stat-l {
-  font-family: var(--f-label);
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--t3);
-}
-
-/* ── SECTION SCAFFOLD ────────────────────────────────────── */
-.wrap { max-width: 1400px; margin: 0 auto; padding: clamp(48px,7vw,88px) clamp(16px,5vw,60px); }
-.sec-tag {
-  font-family: var(--f-label); font-size: 11px; font-weight: 700;
-  letter-spacing: 0.3em; text-transform: uppercase; color: var(--flash);
-  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-}
-.sec-tag::before { content: ''; width: 22px; height: 1px; background: var(--flash); display: block; }
-.sec-h {
-  font-family: var(--f-display);
-  font-size: clamp(38px,5vw,60px); line-height: 0.92;
-  text-transform: uppercase; letter-spacing: 0.02em;
+  color: var(--gray-500);
+  max-width: 460px;
   margin-bottom: 32px;
 }
+.hero-p strong { color: var(--gray-900); font-weight: 600; }
 
-/* ── FILTER BAR ──────────────────────────────────────────── */
-.filter-bar {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  margin-bottom: 28px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  align-items: center;
+.airports {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;
 }
-.chip {
-  font-family: var(--f-label); font-weight: 700;
-  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 7px 16px; border: 1px solid rgba(255,255,255,0.08);
-  background: transparent; color: var(--t3);
-  border-radius: 3px;
+.apt {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 2px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--spring), box-shadow 0.2s;
+  cursor: default;
+}
+.apt:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.apt.primary { border-color: #fecdb8; background: #fff8f5; }
+.apt-code { font-family: var(--f-head); font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--gray-900); }
+.apt.primary .apt-code { color: var(--flash); }
+.apt-city { font-size: 10px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-flash {
+  font-size: 14px; font-weight: 700;
+  background: var(--flash); color: #fff;
+  padding: 14px 28px; border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(255,69,0,0.3);
+  transition: background 0.15s, transform 0.2s var(--spring), box-shadow 0.2s;
+}
+.btn-flash:hover { background: #e63e00; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,69,0,0.35); }
+.btn-plain {
+  font-size: 14px; font-weight: 600; color: var(--gray-500);
+  background: var(--white); border: 1px solid var(--gray-200);
+  padding: 14px 24px; border-radius: 10px;
   transition: all 0.15s;
 }
-.chip:hover { border-color: rgba(255,255,255,0.2); color: var(--t2); }
-.chip.on { background: var(--flash); border-color: var(--flash); color: #fff; font-weight: 700; }
+.btn-plain:hover { border-color: var(--gray-400); color: var(--gray-700); }
 
-/* Price range chips */
-.chip.range { font-size: 11px; }
-
-/* ── DEAL TABLE ──────────────────────────────────────────── */
-.deal-table { width: 100%; border-collapse: collapse; border: 1px solid rgba(255,255,255,0.06); }
-.deal-table thead { background: var(--bg-3); }
-.deal-table thead th {
-  font-family: var(--f-label); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--t3);
-  padding: 11px 18px; text-align: left; white-space: nowrap;
-}
-.deal-table thead th:last-child { text-align: right; }
-.deal-table tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  cursor: pointer;
-  transition: background 0.15s;
-  position: relative;
-}
-.deal-table tbody tr:last-child { border-bottom: none; }
-.deal-table tbody tr:hover { background: rgba(255,255,255,0.025); }
-
-/* Tier accent: full left border */
-.deal-table tbody tr td:first-child { border-left: 3px solid transparent; padding-left: 15px; }
-.deal-table tbody tr[data-tier="FLASH"] td:first-child { border-left-color: var(--flash); }
-.deal-table tbody tr[data-tier="HOT"]   td:first-child { border-left-color: var(--hot); }
-.deal-table tbody tr[data-tier="DEAL"]  td:first-child { border-left-color: var(--deal); }
-.deal-table td { padding: 14px 18px; vertical-align: middle; }
-
-/* PRICE COLUMN — the most important number, styled like it */
-.td-price { width: 130px; }
-.price-main {
-  font-family: var(--f-display);
-  font-size: 38px; line-height: 1; letter-spacing: 0.01em;
-}
-.deal-table tbody tr[data-tier="FLASH"] .price-main { color: var(--flash); }
-.deal-table tbody tr[data-tier="HOT"]   .price-main { color: var(--hot); }
-.deal-table tbody tr[data-tier="DEAL"]  .price-main { color: var(--deal); }
-.price-sub {
-  font-family: var(--f-label); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--t3);
-  margin-top: 1px;
-}
-
-/* Tier badge */
-.tier-bdg {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-family: var(--f-label); font-size: 9px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 2px; margin-bottom: 6px;
-}
-.tier-bdg.FLASH { background: var(--flash-bg); color: var(--flash); border: 1px solid rgba(255,94,58,0.25); }
-.tier-bdg.HOT   { background: var(--hot-bg);   color: var(--hot);   border: 1px solid rgba(245,166,35,0.2); }
-.tier-bdg.DEAL  { background: var(--deal-bg);  color: var(--deal);  border: 1px solid rgba(56,189,248,0.2); }
-
-/* Expiry inline */
-.expiry-inline {
-  font-family: var(--f-label); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--red); display: flex; align-items: center; gap: 3px; margin-top: 3px;
-}
-
-/* ROUTE COLUMN */
-.route-big {
-  font-family: var(--f-display);
-  font-size: 24px; letter-spacing: 0.03em;
-  text-transform: uppercase; line-height: 1; margin-bottom: 5px;
-}
-.rarrow { color: var(--t3); margin: 0 5px; }
-.route-city { font-size: 12px; color: var(--t2); line-height: 1.4; }
-
-.badge-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-.badge {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-family: var(--f-label); font-size: 9px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 2px 7px; border-radius: 2px;
-}
-.badge.ns  { background: var(--green-bg); color: var(--green); border: 1px solid rgba(52,211,153,0.18); }
-.badge.int { background: rgba(139,92,246,0.09); color: #a78bfa; border: 1px solid rgba(139,92,246,0.18); }
-.badge.apt { background: rgba(255,255,255,0.04); color: var(--t2); border: 1px solid rgba(255,255,255,0.08); }
-
-/* META COLUMN */
-.meta-line {
-  font-size: 12px; color: var(--t3); display: flex;
-  align-items: center; gap: 5px; margin-bottom: 4px;
-}
-.meta-line:last-child { margin: 0; }
-
-/* Expiry bar micro */
-.expbar { width: 72px; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; }
-.expbar-fill { height: 100%; border-radius: 2px; }
-
-/* ACTION COLUMN */
-.td-action { text-align: right; min-width: 130px; }
-.savings-pct {
-  font-family: var(--f-display); font-size: 22px;
-  color: var(--green); letter-spacing: 0.02em; line-height: 1;
-}
-.normal-price { font-size: 11px; color: var(--t3); text-decoration: line-through; margin-bottom: 8px; }
-.btn-book {
-  display: inline-block;
-  font-family: var(--f-label); font-weight: 700;
-  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-  background: var(--flash); color: #fff;
-  padding: 8px 16px; border-radius: 3px;
-  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-  white-space: nowrap;
-}
-.deal-table tbody tr[data-tier="HOT"]  .btn-book { background: var(--hot); color: #000; }
-.deal-table tbody tr[data-tier="DEAL"] .btn-book { background: var(--deal); color: #000; }
-.btn-book:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--flash-glow); }
-
-/* No-results */
-.no-results {
-  padding: 72px; text-align: center; color: var(--t3); font-size: 14px; line-height: 1.8;
-}
-.spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--flash); border-radius: 50%; animation: spin 0.65s linear infinite; margin-right: 8px; vertical-align: middle; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── DESTINATION SHOWCASE ─────────────────────────────────── */
-.dest-strip {
-  background: var(--bg-2);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+/* Hero photo grid */
+.hero-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  border-radius: 20px;
   overflow: hidden;
 }
-.dest-track {
-  display: flex;
-  gap: 3px;
-  animation: slideL 30s linear infinite;
-  will-change: transform;
+.hp {
+  aspect-ratio: 1;
+  background-size: cover; background-position: center;
+  border-radius: 12px;
+  transition: transform 0.5s var(--spring);
 }
+.hp:hover { transform: scale(1.03); }
+.hp:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'); }
+.hp:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80'); }
+.hp:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1533105079780-92b9be482077?w=500&q=80'); }
+.hp:nth-child(4) { background-image: url('https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=500&q=80'); }
+
+/* ── STATS BAR ───────────────────────────────────────────── */
+.stats-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-100);
+  box-shadow: var(--shadow-sm);
+}
+.stats-inner {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 clamp(16px,5vw,56px);
+  display: grid; grid-template-columns: repeat(5,1fr);
+}
+@media(max-width:600px){ .stats-inner { grid-template-columns: repeat(3,1fr); } }
+.stat { padding: 20px 16px; border-right: 1px solid var(--gray-100); }
+.stat:last-child { border-right: none; }
+.stat-n {
+  font-family: var(--f-head);
+  font-size: 30px; font-weight: 800;
+  letter-spacing: -0.03em; line-height: 1;
+  color: var(--gray-900); margin-bottom: 3px;
+}
+.stat-n.orange { color: var(--flash); }
+.stat-n.sky    { color: var(--deal); }
+.stat-l { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.07em; }
+
+/* ── SECTION SCAFFOLD ────────────────────────────────────── */
+.section { padding: clamp(48px,6vw,80px) clamp(16px,5vw,56px); }
+.section-inner { max-width: 1280px; margin: 0 auto; }
+.section-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--flash); margin-bottom: 8px;
+}
+.section-tag::before { content: ''; width: 18px; height: 2px; background: var(--flash); display: block; }
+.section-h {
+  font-family: var(--f-head);
+  font-size: clamp(32px,4vw,50px);
+  font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--gray-900); margin-bottom: 28px;
+}
+
+/* ── DEAL CARDS ──────────────────────────────────────────── */
+/* Cards grid — not a table. Scannable, beautiful on mobile. */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.deal-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s var(--spring), box-shadow 0.25s, border-color 0.15s;
+  display: flex; flex-direction: column;
+}
+.deal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--gray-300);
+}
+.deal-card[data-tier="FLASH"] { border-top: 3px solid var(--flash); }
+.deal-card[data-tier="HOT"]   { border-top: 3px solid var(--hot); }
+.deal-card[data-tier="DEAL"]  { border-top: 3px solid var(--deal); }
+
+/* Destination photo inside card */
+.card-photo {
+  width: 100%; height: 160px;
+  background-size: cover; background-position: center;
+  position: relative; flex-shrink: 0;
+}
+.card-photo-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
+  display: flex; align-items: flex-end; padding: 14px;
+}
+.card-dest-name {
+  font-family: var(--f-head);
+  font-size: 22px; font-weight: 800;
+  color: #fff; line-height: 1; letter-spacing: -0.02em;
+}
+.card-dest-sub { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+.card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-price {
+  font-family: var(--f-head);
+  font-size: 42px; font-weight: 900;
+  letter-spacing: -0.04em; line-height: 1;
+}
+.deal-card[data-tier="FLASH"] .card-price { color: var(--flash); }
+.deal-card[data-tier="HOT"]   .card-price { color: var(--hot); }
+.deal-card[data-tier="DEAL"]  .card-price { color: var(--deal); }
+.card-price-sub { font-size: 11px; font-weight: 500; color: var(--gray-400); margin-top: 2px; }
+
+.tier-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 100px;
+}
+.tier-pill.FLASH { background: #fff2ee; color: var(--flash); }
+.tier-pill.HOT   { background: #fffbeb; color: var(--hot); }
+.tier-pill.DEAL  { background: #f0f9ff; color: var(--deal); }
+
+.card-route {
+  display: flex; align-items: center; gap: 8px;
+}
+.route-code {
+  font-family: var(--f-head);
+  font-size: 18px; font-weight: 800; color: var(--gray-900); letter-spacing: -0.02em;
+}
+.route-arrow { font-size: 14px; color: var(--gray-400); }
+
+.card-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.meta-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600;
+  background: var(--gray-100); color: var(--gray-500);
+  padding: 3px 10px; border-radius: 100px;
+}
+.meta-pill.green { background: #ecfdf5; color: var(--green); }
+
+/* Expiry bar */
+.card-expiry {}
+.exp-label {
+  font-size: 10px; font-weight: 600; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 5px; display: flex; justify-content: space-between;
+}
+.exp-label .exp-time { font-weight: 700; }
+.expbar { height: 4px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+.expbar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+
+.card-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 12px; border-top: 1px solid var(--gray-100);
+}
+.card-savings {
+  font-size: 13px; font-weight: 700; color: var(--green);
+}
+.card-was { font-size: 11px; color: var(--gray-400); text-decoration: line-through; }
+
+.card-btn {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  background: var(--flash); color: #fff;
+  padding: 9px 18px; border-radius: 8px;
+  display: inline-block;
+  transition: background 0.15s, transform 0.15s;
+}
+.deal-card[data-tier="HOT"]  .card-btn { background: var(--hot); color: #fff; }
+.deal-card[data-tier="DEAL"] .card-btn { background: var(--deal); }
+.card-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* ── FILTERS ─────────────────────────────────────────────── */
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 24px; align-items: center;
+}
+.chip {
+  font-size: 13px; font-weight: 600;
+  padding: 8px 16px; border-radius: 100px;
+  border: 1.5px solid var(--gray-200);
+  color: var(--gray-500); background: var(--white);
+  transition: all 0.15s;
+}
+.chip:hover { border-color: var(--gray-400); color: var(--gray-700); }
+.chip.on { background: var(--flash); border-color: var(--flash); color: #fff; }
+
+/* ── DESTINATION STRIP ───────────────────────────────────── */
+.dest-strip { overflow: hidden; padding: 20px 0; background: var(--gray-50); border-top: 1px solid var(--gray-100); }
+.dest-track { display: flex; gap: 12px; animation: slideL 35s linear infinite; }
 .dest-track:hover { animation-play-state: paused; }
 @keyframes slideL { to { transform: translateX(-50%); } }
-.dest-card {
-  flex-shrink: 0;
-  width: 220px; height: 140px;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s var(--spring);
+.dest-item {
+  flex-shrink: 0; width: 190px; height: 130px;
+  border-radius: 12px; overflow: hidden;
+  position: relative; cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s var(--spring);
 }
-.dest-card:hover { transform: scale(1.03); z-index: 2; }
-.dest-bg {
-  position: absolute; inset: 0;
-  background-size: cover; background-position: center;
-  transition: transform 6s linear;
-}
-.dest-card:hover .dest-bg { transform: scale(1.08); }
-.dest-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(6,8,16,0.88) 0%, rgba(6,8,16,0.2) 60%, transparent 100%);
-}
-.dest-info {
-  position: absolute; bottom: 12px; left: 14px; right: 14px; z-index: 2;
-}
-.dest-code {
-  font-family: var(--f-display);
-  font-size: 26px; letter-spacing: 0.04em; color: #fff; line-height: 1;
-}
-.dest-price {
-  font-family: var(--f-label); font-size: 11px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px;
-}
+.dest-item:hover { transform: scale(1.04); }
+.dest-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.dest-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%); }
+.dest-label { position: absolute; bottom: 10px; left: 12px; }
+.dest-code { font-family: var(--f-head); font-size: 20px; font-weight: 900; color: #fff; line-height: 1; }
+.dest-pr { font-size: 11px; font-weight: 700; color: #ffe066; margin-top: 1px; }
 
-/* ── HOW IT WORKS ─────────────────────────────────────────── */
-.how-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 1px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.05);
-  overflow: hidden;
-}
+/* ── HOW IT WORKS ────────────────────────────────────────── */
+.how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
 @media(max-width:640px){ .how-grid { grid-template-columns: 1fr; } }
-.how-block {
-  background: var(--bg-2);
-  padding: 36px 28px;
-  position: relative; overflow: hidden;
+.how-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: var(--shadow-sm);
 }
-.how-n {
-  position: absolute; top: 10px; right: 16px;
-  font-family: var(--f-display); font-size: 96px; line-height: 1;
-  color: rgba(255,94,58,0.05); pointer-events: none;
+.how-num {
+  font-family: var(--f-head);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.05em;
+  color: var(--flash); margin-bottom: 14px;
 }
-.how-icon { font-size: 30px; margin-bottom: 16px; display: block; }
-.how-title {
-  font-family: var(--f-display); font-size: 24px;
-  text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 10px;
-}
-.how-body { font-size: 13px; line-height: 1.8; color: var(--t2); }
+.how-icon { font-size: 28px; margin-bottom: 12px; display: block; }
+.how-h { font-family: var(--f-head); font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--gray-900); margin-bottom: 8px; }
+.how-p { font-size: 14px; line-height: 1.7; color: var(--gray-500); }
 
 /* ── MODAL ────────────────────────────────────────────────── */
 .modal-bg {
   position: fixed; inset: 0;
-  background: rgba(6,8,16,0.85);
-  backdrop-filter: blur(18px);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(12px);
   z-index: 999;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
@@ -631,225 +455,191 @@ button { cursor: pointer; font: inherit; border: none; }
 }
 .modal-bg.show { opacity: 1; pointer-events: all; }
 .modal {
-  background: var(--bg-card);
-  border: 1px solid rgba(255,255,255,0.08);
-  max-width: 560px; width: 100%;
+  background: var(--white);
+  border-radius: 20px;
+  max-width: 520px; width: 100%;
   overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.2);
   transform: translateY(20px) scale(0.97);
   transition: transform 0.4s var(--spring);
-  border-radius: 6px;
 }
 .modal-bg.show .modal { transform: translateY(0) scale(1); }
-
-/* Destination image in modal */
-.modal-hero {
-  width: 100%; height: 200px;
+.modal-img {
+  width: 100%; height: 210px;
   background-size: cover; background-position: center;
   position: relative;
 }
-.modal-hero-overlay {
+.modal-img-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(6,8,16,0.2) 0%, rgba(6,8,16,0.9) 100%);
+  background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 100%);
   display: flex; align-items: flex-end; padding: 20px;
 }
-.modal-dest-name {
-  font-family: var(--f-display);
-  font-size: 42px; letter-spacing: 0.03em; color: #fff; line-height: 1;
-}
-.modal-dest-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+.modal-city { font-family: var(--f-head); font-size: 36px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -0.03em; }
+.modal-citysub { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 3px; }
 
 .modal-body { padding: 24px; }
-.modal-price-row {
-  display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px;
-}
-.modal-price {
-  font-family: var(--f-display); font-size: 72px; line-height: 1;
-  letter-spacing: 0.01em;
-}
-.modal-price sup { font-size: 28px; vertical-align: top; margin-top: 12px; display: inline-block; }
-.modal-savings {
-  display: flex; flex-direction: column; gap: 2px;
-  justify-content: flex-end; padding-bottom: 8px;
-}
-.modal-pct { font-family: var(--f-display); font-size: 28px; color: var(--green); }
-.modal-was { font-size: 12px; color: var(--t3); text-decoration: line-through; }
+.modal-price-row { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+.modal-price { font-family: var(--f-head); font-size: 64px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+.modal-price.flash { color: var(--flash); }
+.modal-price.hot   { color: var(--hot); }
+.modal-price.deal  { color: var(--deal); }
+.modal-was { font-size: 13px; color: var(--gray-400); text-decoration: line-through; }
+.modal-saved { font-size: 15px; font-weight: 700; color: var(--green); }
 
-.modal-data {
-  background: var(--bg-3); border: 1px solid rgba(255,255,255,0.05);
-  padding: 14px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 20px;
-  border-radius: 4px;
-}
-.modal-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-.mk { color: var(--t3); }
-.mv { color: var(--t1); font-weight: 500; }
+.modal-expiry { margin: 14px 0; }
+.modal-exp-head { font-size: 11px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; justify-content: space-between; }
+.modal-expbar { height: 6px; background: var(--gray-200); border-radius: 6px; overflow: hidden; }
+.modal-expfill { height: 100%; border-radius: 6px; transition: width 0.5s; }
 
-/* Expiry bar in modal */
-.modal-expiry { margin-bottom: 18px; }
-.modal-exp-label { font-family: var(--f-label); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--t3); margin-bottom: 6px; }
-.modal-expbar { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
-.modal-expfill { height: 100%; border-radius: 3px; transition: width 0.5s var(--ease); }
-
-.modal-actions { display: flex; gap: 10px; }
-.modal-book {
-  flex: 1; display: block; text-align: center;
-  font-family: var(--f-label); font-weight: 700; font-size: 14px;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  background: linear-gradient(135deg, var(--flash) 0%, #ff3d1f 100%);
-  color: #fff; padding: 14px; border-radius: 4px;
-  box-shadow: 0 4px 16px var(--flash-glow);
-  transition: transform 0.2s var(--spring), box-shadow 0.2s;
+.modal-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin: 16px 0;
 }
-.modal-book:hover { transform: translateY(-1px); box-shadow: 0 8px 28px var(--flash-glow); }
-.modal-close-btn {
-  font-family: var(--f-label); font-weight: 700; font-size: 12px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  background: transparent; color: var(--t3);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 14px 20px; border-radius: 4px;
-  transition: all 0.15s;
+.modal-field {
+  background: var(--gray-50);
+  border-radius: 10px; padding: 12px 14px;
 }
-.modal-close-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--t1); }
-.modal-caveat { margin-top: 10px; font-size: 11px; color: var(--t3); line-height: 1.5; text-align: center; }
+.modal-field-label { font-size: 10px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.modal-field-val { font-size: 14px; font-weight: 600; color: var(--gray-900); }
 
-/* ── FOOTER ───────────────────────────────────────────────── */
-.footer { border-top: 1px solid rgba(255,255,255,0.05); }
+.modal-cta {
+  display: flex; flex-direction: column; gap: 10px; margin-top: 18px;
+}
+.btn-modal-book {
+  display: block; text-align: center;
+  font-size: 15px; font-weight: 700;
+  background: var(--flash); color: #fff;
+  padding: 16px; border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(255,69,0,0.25);
+  transition: background 0.15s, transform 0.15s var(--spring), box-shadow 0.2s;
+}
+.btn-modal-book:hover { background: #e63e00; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(255,69,0,0.3); }
+.btn-modal-close {
+  font-size: 13px; font-weight: 600; color: var(--gray-400);
+  text-align: center; padding: 8px;
+  transition: color 0.15s;
+}
+.btn-modal-close:hover { color: var(--gray-700); }
+
+/* ── EMPTY / LOAD ─────────────────────────────────────────── */
+.empty { padding: 72px; text-align: center; color: var(--gray-400); font-size: 14px; }
+.spin { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--gray-200); border-top-color: var(--flash); border-radius: 50%; animation: spin 0.65s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+.footer {
+  background: var(--gray-900); color: #fff;
+  padding: clamp(32px,4vw,48px) clamp(16px,5vw,56px);
+}
 .footer-inner {
-  max-width: 1400px; margin: 0 auto;
-  padding: 32px clamp(16px,5vw,60px);
+  max-width: 1280px; margin: 0 auto;
   display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: 16px;
 }
-.footer-brand { font-family: var(--f-display); font-size: 22px; letter-spacing: 0.04em; }
-.footer-note { font-size: 12px; color: var(--t3); max-width: 440px; line-height: 1.6; }
+.footer-logo { font-family: var(--f-head); font-size: 20px; font-weight: 900; letter-spacing: -0.02em; }
+.footer-logo span { color: var(--flash); }
+.footer-note { font-size: 12px; color: rgba(255,255,255,0.35); max-width: 420px; line-height: 1.6; }
 
-/* ── ANIMATIONS ───────────────────────────────────────────── */
-@keyframes floatUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.65s var(--ease), transform 0.65s var(--ease); }
-.reveal.in { opacity: 1; transform: translateY(0); }
-.d1 { transition-delay: 0.06s; }
-.d2 { transition-delay: 0.12s; }
-.d3 { transition-delay: 0.18s; }
+/* ── ANIMATIONS ──────────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in { opacity: 1; transform: none; }
+.d1 { transition-delay: 0.07s; }
+.d2 { transition-delay: 0.14s; }
 
-/* ── RESPONSIVE ───────────────────────────────────────────── */
-@media(max-width:1000px){
-  .deal-table thead th:nth-child(4),
-  .deal-table td:nth-child(4) { display: none; }
-}
 @media(max-width:680px){
-  .deal-table thead { display: none; }
-  .deal-table tbody tr { display: flex; flex-wrap: wrap; padding: 14px; gap: 8px; }
-  .deal-table td { display: block; padding: 0; border: none; }
-  .td-action { margin-top: 4px; text-align: left; }
-  .hero { min-height: auto; padding-bottom: 40px; }
-  .hero-mosaic { display: none; }
-  .nav-pill { display: none; }
-  .stats-inner { grid-template-columns: repeat(3,1fr); }
+  .deals-grid { grid-template-columns: 1fr; }
+  .nav-live { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ── TICKER ────────────────────────────────────────────── -->
+<!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track" id="tickerTrack">
-    <span class="t-item">🔥 SAT → LAX <span class="tp">$129</span> NONSTOP</span>
-    <span class="t-item">⚡ SAT → DEN <span class="tp">$79</span> NONSTOP</span>
-    <span class="t-item">🌴 SAT → CUN <span class="tp">$199</span> NONSTOP</span>
-    <span class="t-item">🔥 SAT → ORD <span class="tp">$159</span> NONSTOP</span>
-    <span class="t-item">⚡ AUS → LAS <span class="tp">$89</span> NONSTOP</span>
-    <span class="t-item">🌴 IAH → MEX <span class="tp">$149</span> NONSTOP</span>
-    <span class="t-item">🔥 SAT → MIA <span class="tp">$119</span> NONSTOP</span>
-    <span class="t-item">⚡ SAT → LAS <span class="tp">$69</span> NONSTOP</span>
-    <span class="t-item">🌴 IAH → SJU <span class="tp">$209</span> RT</span>
-    <span class="t-item">🔥 SAT → JFK <span class="tp">$179</span> RT</span>
-    <span class="t-item">⚡ AUS → DEN <span class="tp">$79</span> NONSTOP</span>
-    <span class="t-item">🌴 SAT → GDL <span class="tp">$109</span> NONSTOP</span>
-    <!-- dupe for seamless loop -->
-    <span class="t-item">🔥 SAT → LAX <span class="tp">$129</span> NONSTOP</span>
-    <span class="t-item">⚡ SAT → DEN <span class="tp">$79</span> NONSTOP</span>
-    <span class="t-item">🌴 SAT → CUN <span class="tp">$199</span> NONSTOP</span>
-    <span class="t-item">🔥 SAT → ORD <span class="tp">$159</span> NONSTOP</span>
-    <span class="t-item">⚡ AUS → LAS <span class="tp">$89</span> NONSTOP</span>
-    <span class="t-item">🌴 IAH → MEX <span class="tp">$149</span> NONSTOP</span>
-    <span class="t-item">🔥 SAT → MIA <span class="tp">$119</span> NONSTOP</span>
-    <span class="t-item">⚡ SAT → LAS <span class="tp">$69</span> NONSTOP</span>
-    <span class="t-item">🌴 IAH → SJU <span class="tp">$209</span> RT</span>
-    <span class="t-item">🔥 SAT → JFK <span class="tp">$179</span> RT</span>
-    <span class="t-item">⚡ AUS → DEN <span class="tp">$79</span> NONSTOP</span>
-    <span class="t-item">🌴 SAT → GDL <span class="tp">$109</span> NONSTOP</span>
+    <span class="t-item">🔥 SAT → LAX <span class="tp">$129</span> Nonstop</span>
+    <span class="t-item">⚡ SAT → DEN <span class="tp">$79</span> Nonstop</span>
+    <span class="t-item">🌴 SAT → CUN <span class="tp">$199</span> Nonstop</span>
+    <span class="t-item">🔥 AUS → LAS <span class="tp">$89</span> Nonstop</span>
+    <span class="t-item">⚡ IAH → MEX <span class="tp">$149</span> Nonstop</span>
+    <span class="t-item">🔥 SAT → MIA <span class="tp">$119</span> Nonstop</span>
+    <span class="t-item">⚡ SAT → LAS <span class="tp">$69</span> Nonstop</span>
+    <span class="t-item">🌴 SAT → GDL <span class="tp">$109</span> Nonstop</span>
+    <span class="t-item">🔥 SAT → LAX <span class="tp">$129</span> Nonstop</span>
+    <span class="t-item">⚡ SAT → DEN <span class="tp">$79</span> Nonstop</span>
+    <span class="t-item">🌴 SAT → CUN <span class="tp">$199</span> Nonstop</span>
+    <span class="t-item">🔥 AUS → LAS <span class="tp">$89</span> Nonstop</span>
+    <span class="t-item">⚡ IAH → MEX <span class="tp">$149</span> Nonstop</span>
+    <span class="t-item">🔥 SAT → MIA <span class="tp">$119</span> Nonstop</span>
+    <span class="t-item">⚡ SAT → LAS <span class="tp">$69</span> Nonstop</span>
+    <span class="t-item">🌴 SAT → GDL <span class="tp">$109</span> Nonstop</span>
   </div>
 </div>
 
-<!-- ── NAV ───────────────────────────────────────────────── -->
+<!-- NAV -->
 <nav class="nav">
-  <div class="logo"><span class="logo-f">Flash</span><span class="logo-l">Fly</span></div>
-  <div class="nav-pill"><div class="pulse-dot"></div>Scanning Every 4h</div>
-  <button class="nav-cta" onclick="document.getElementById('deals').scrollIntoView({behavior:'smooth'})">See Deals ↓</button>
+  <div class="logo">Flash<span>Fly</span></div>
+  <div class="nav-right">
+    <div class="nav-live"><div class="dot"></div>Scanning every 4h</div>
+    <button class="nav-btn" onclick="document.getElementById('deals').scrollIntoView({behavior:'smooth'})">See Deals →</button>
+  </div>
 </nav>
 
-<!-- ── HERO ──────────────────────────────────────────────── -->
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-bg-glow"></div>
-  <div class="hero-scan"></div>
-
-  <div class="hero-copy">
-    <p class="hero-eyebrow"><span class="eyebrow-bar"></span>SAT · AUS · IAH · HOU — Updated Every 4 Hours</p>
-    <h1 class="hero-h1">
-      <span class="h1-a">Leave</span>
-      <span class="h1-b">Saturday.</span>
-      <span class="h1-c">Gone Sunday.</span>
-    </h1>
-    <p class="hero-sub">
-      Flash flights don't wait. We scan <strong>4 Texas airports every 4 hours</strong> and surface deals worth booking before they vanish — automated, validated, zero noise.
-    </p>
-    <div class="airports">
-      <div class="apt star"><span class="apt-code">SAT</span><span class="apt-city">San Antonio ★</span></div>
-      <div class="apt"><span class="apt-code">AUS</span><span class="apt-city">Austin</span></div>
-      <div class="apt"><span class="apt-code">IAH</span><span class="apt-city">Houston</span></div>
-      <div class="apt"><span class="apt-code">HOU</span><span class="apt-city">Hobby</span></div>
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <div class="hero-tag">⚡ SAT · AUS · IAH · HOU — Updated every 4 hours</div>
+      <h1 class="hero-h1">
+        Gone by<br>
+        <span class="accent">Sunday.</span><br>
+        <span class="light">Book it now.</span>
+      </h1>
+      <p class="hero-p">
+        Flash flights don't wait. We scan <strong>4 Texas airports every 4 hours</strong> and surface deals worth booking before they disappear.
+      </p>
+      <div class="airports">
+        <div class="apt primary"><div class="apt-code">SAT</div><div class="apt-city">San Antonio ★</div></div>
+        <div class="apt"><div class="apt-code">AUS</div><div class="apt-city">Austin</div></div>
+        <div class="apt"><div class="apt-code">IAH</div><div class="apt-city">Houston</div></div>
+        <div class="apt"><div class="apt-code">HOU</div><div class="apt-city">Hobby</div></div>
+      </div>
+      <div class="hero-btns">
+        <button class="btn-flash" onclick="document.getElementById('deals').scrollIntoView({behavior:'smooth'})">🔥 See Flash Deals</button>
+        <button class="btn-plain" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
+      </div>
     </div>
-    <div class="hero-btns">
-      <button class="btn-primary" onclick="document.getElementById('deals').scrollIntoView({behavior:'smooth'})">🔥 See Flash Deals</button>
-      <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
-    </div>
-  </div>
-
-  <div class="hero-mosaic">
-    <div class="mosaic-grid">
-      <div class="mosaic-img" style="background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80')"></div>
-      <div class="mosaic-img" style="background-image:url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80')"></div>
-      <div class="mosaic-img" style="background-image:url('https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&q=80')"></div>
-      <div class="mosaic-img" style="background-image:url('https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=600&q=80')"></div>
+    <div class="hero-photos">
+      <div class="hp"></div>
+      <div class="hp"></div>
+      <div class="hp"></div>
+      <div class="hp"></div>
     </div>
   </div>
 </section>
 
-<!-- ── DESTINATION SCROLL STRIP ──────────────────────────── -->
+<!-- DEST STRIP -->
 <div class="dest-strip">
-  <div class="dest-track" id="destTrack">
-    <!-- populated by JS from deal data -->
-  </div>
+  <div class="dest-track" id="destTrack"></div>
 </div>
 
-<!-- ── STATS STRIP ────────────────────────────────────────── -->
-<div class="stats-strip">
+<!-- STATS -->
+<div class="stats-bar">
   <div class="stats-inner">
-    <div class="stat"><div class="stat-n fire" id="sFlash">—</div><div class="stat-l">Flash Deals Now</div></div>
-    <div class="stat"><div class="stat-n fire" id="sLow">—</div><div class="stat-l">Lowest Today</div></div>
-    <div class="stat"><div class="stat-n sky"  id="sExpiring">—</div><div class="stat-l">Expiring &lt; 8h</div></div>
-    <div class="stat"><div class="stat-n"      id="sNonstop">—</div><div class="stat-l">Nonstop Deals</div></div>
-    <div class="stat"><div class="stat-n"      id="sScan" style="font-size:18px;padding-top:9px">Now</div><div class="stat-l">Last Scanned</div></div>
+    <div class="stat"><div class="stat-n orange" id="sFlash">—</div><div class="stat-l">Flash Deals</div></div>
+    <div class="stat"><div class="stat-n orange" id="sLow">—</div><div class="stat-l">Lowest Today</div></div>
+    <div class="stat"><div class="stat-n sky"    id="sExp">—</div><div class="stat-l">Expiring &lt; 8h</div></div>
+    <div class="stat"><div class="stat-n"        id="sNS">—</div><div class="stat-l">Nonstop Deals</div></div>
+    <div class="stat"><div class="stat-n" style="font-size:16px;padding-top:8px" id="sScan">Now</div><div class="stat-l">Last Scanned</div></div>
   </div>
 </div>
 
-<!-- ── DEAL TABLE ─────────────────────────────────────────── -->
-<section id="deals" style="background:var(--bg)">
-  <div class="wrap">
-    <p class="sec-tag reveal">Flash Deal Feed</p>
-    <h2 class="sec-h reveal">Real Prices.<br>Right Now.</h2>
+<!-- DEALS -->
+<section class="section" id="deals" style="background:var(--off)">
+  <div class="section-inner">
+    <p class="section-tag reveal">Flash Deal Feed</p>
+    <h2 class="section-h reveal">Real Prices.<br>Right Now.</h2>
+
     <div class="filter-bar reveal">
       <button class="chip on" onclick="filt('all',this)">All</button>
       <button class="chip" onclick="filt('FLASH',this)">🔥 Flash</button>
@@ -859,324 +649,259 @@ button { cursor: pointer; font: inherit; border: none; }
       <button class="chip" onclick="filt('SAT',this)">SAT</button>
       <button class="chip" onclick="filt('AUS',this)">AUS</button>
       <button class="chip" onclick="filt('IAH',this)">IAH</button>
-      <span style="margin-left:auto;display:flex;gap:5px;">
-        <button class="chip range" onclick="filtPrice(0,100,this)">Under $100</button>
-        <button class="chip range" onclick="filtPrice(0,200,this)">Under $200</button>
-        <button class="chip range" onclick="filtPrice(0,9999,this)" style="display:none" id="clearRange">Clear ×</button>
-      </span>
+      <button class="chip" onclick="filtPrice(0,100,this)" style="margin-left:auto">Under $100</button>
+      <button class="chip" onclick="filtPrice(0,200,this)">Under $200</button>
     </div>
-    <table class="deal-table reveal d1" id="dealTable">
-      <thead>
-        <tr>
-          <th>Price</th>
-          <th>Route</th>
-          <th>Details</th>
-          <th>Airline / Dates</th>
-          <th style="text-align:right">You Save</th>
-        </tr>
-      </thead>
-      <tbody id="dealBody">
-        <tr><td colspan="5"><div class="no-results"><span class="spin"></span>Loading deals…</div></td></tr>
-      </tbody>
-    </table>
+
+    <div class="deals-grid" id="dealsGrid">
+      <div style="grid-column:1/-1"><div class="empty"><span class="spin"></span>Loading deals…</div></div>
+    </div>
   </div>
 </section>
 
-<!-- ── HOW IT WORKS ───────────────────────────────────────── -->
-<section id="how" style="background:var(--bg-2);border-top:1px solid rgba(255,255,255,0.04)">
-  <div class="wrap">
-    <p class="sec-tag reveal">The System</p>
-    <h2 class="sec-h reveal">Why You'll Never<br>Overpay Again.</h2>
+<!-- HOW -->
+<section class="section" id="how" style="background:var(--white)">
+  <div class="section-inner">
+    <p class="section-tag reveal">The System</p>
+    <h2 class="section-h reveal">Why you'll never<br>overpay again.</h2>
     <div class="how-grid reveal d1">
-      <div class="how-block">
-        <span class="how-n">01</span>
+      <div class="how-card">
+        <div class="how-num">01</div>
         <span class="how-icon">🛰️</span>
-        <h3 class="how-title">Automated Scanning</h3>
-        <p class="how-body">Every 4 hours, the scanner checks hundreds of routes from SAT (primary), AUS, IAH, and HOU. No manual curation. No human delay. Just data.</p>
+        <h3 class="how-h">Automated Scanning</h3>
+        <p class="how-p">Every 4 hours, the scanner checks hundreds of routes from SAT, AUS, IAH, and HOU. No manual curation. No human delay.</p>
       </div>
-      <div class="how-block">
-        <span class="how-n">02</span>
+      <div class="how-card">
+        <div class="how-num">02</div>
         <span class="how-icon">⚡</span>
-        <h3 class="how-title">Flash Detection</h3>
-        <p class="how-body">Prices compared against real Google Flights baselines. Anything ≥40% below normal — or under $150 domestic / $350 international — hits the Flash tier.</p>
+        <h3 class="how-h">Flash Detection</h3>
+        <p class="how-p">Prices compared against real Google Flights baselines. Anything ≥40% off — or under $150 domestic / $350 international — hits Flash tier.</p>
       </div>
-      <div class="how-block">
-        <span class="how-n">03</span>
+      <div class="how-card">
+        <div class="how-num">03</div>
         <span class="how-icon">🔥</span>
-        <h3 class="how-title">Book Before It Vanishes</h3>
-        <p class="how-body">Flash prices last 4–48 hours. Every deal links directly to Google Flights. One click to confirm. One click to book. Gone by tomorrow.</p>
+        <h3 class="how-h">Book Before It Vanishes</h3>
+        <p class="how-p">Flash deals last 4–48 hours. Every deal links directly to Google Flights. One click to verify, one click to book.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<!-- FOOTER -->
 <footer class="footer">
   <div class="footer-inner">
-    <div class="footer-brand"><span style="color:var(--flash)">Flash</span>Fly</div>
-    <p class="footer-note">Automated flash flight deals from San Antonio (SAT ★), Austin & Houston. Scan every 4 hours. Book fast — flash prices don't wait.</p>
+    <div class="footer-logo">Flash<span>Fly</span></div>
+    <p class="footer-note">Automated flash flight detection from San Antonio (SAT ★), Austin & Houston. Scan every 4 hours. Book fast.</p>
   </div>
 </footer>
 
-<!-- ── MODAL ──────────────────────────────────────────────── -->
+<!-- MODAL -->
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div id="modalInner"></div>
-  </div>
+  <div class="modal"><div id="modalInner"></div></div>
 </div>
 
 <script>
-// ── DESTINATION IMAGES ────────────────────────────────────
-const DEST_IMGS = {
-  // Domestic
-  LAX: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=400&q=75',
-  DEN: 'https://images.unsplash.com/photo-1546156929-a4c0ac411f47?w=400&q=75',
-  MIA: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=75',
-  JFK: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=400&q=75',
-  ORD: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=400&q=75',
-  LAS: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=400&q=75',
-  PHX: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75',
-  MCO: 'https://images.unsplash.com/photo-1518136247453-74e7b5265980?w=400&q=75',
-  ATL: 'https://images.unsplash.com/photo-1575936123452-b67c3203c357?w=400&q=75',
-  SFO: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&q=75',
-  SEA: 'https://images.unsplash.com/photo-1438401171849-74ac270044ee?w=400&q=75',
-  BOS: 'https://images.unsplash.com/photo-1570872626485-d8ffea69f463?w=400&q=75',
-  EWR: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=400&q=75',
-  DCA: 'https://images.unsplash.com/photo-1501466044931-62695aada8e9?w=400&q=75',
-  // International
-  CUN: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=75',
-  GDL: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75',
-  MEX: 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=400&q=75',
-  MTY: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=400&q=75',
-  SJU: 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=400&q=75',
-  LIR: 'https://images.unsplash.com/photo-1517759544474-6e91babe5463?w=400&q=75',
-  CZM: 'https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?w=400&q=75',
-  PVR: 'https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=400&q=75',
-  // Default
-  DEFAULT: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=75'
+// ── DEST IMAGES ────────────────────────────────────────────
+const IMG = {
+  LAX:'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=500&q=75',
+  DEN:'https://images.unsplash.com/photo-1546156929-a4c0ac411f47?w=500&q=75',
+  MIA:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=75',
+  JFK:'https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=500&q=75',
+  ORD:'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=500&q=75',
+  LAS:'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=500&q=75',
+  PHX:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=75',
+  MCO:'https://images.unsplash.com/photo-1518136247453-74e7b5265980?w=500&q=75',
+  ATL:'https://images.unsplash.com/photo-1575936123452-b67c3203c357?w=500&q=75',
+  SFO:'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=500&q=75',
+  CUN:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=75',
+  GDL:'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=500&q=75',
+  MEX:'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=500&q=75',
+  MTY:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=75',
+  SJU:'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=500&q=75',
+  LIR:'https://images.unsplash.com/photo-1517759544474-6e91babe5463?w=500&q=75',
+  DEFAULT:'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=75'
 };
-function destImg(code) { return DEST_IMGS[code] || DEST_IMGS.DEFAULT; }
+function img(code){ return IMG[code]||IMG.DEFAULT; }
 
-// ── TIER CONFIG ───────────────────────────────────────────
-const T = {
-  FLASH: { icon:'🔥', color:'var(--flash)', glow:'var(--flash-glow)' },
-  HOT:   { icon:'🌶', color:'var(--hot)',   glow:'rgba(245,166,35,0.25)' },
-  DEAL:  { icon:'✈️', color:'var(--deal)',  glow:'rgba(56,189,248,0.2)' }
+const TC = {
+  FLASH:{ icon:'🔥', color:'var(--flash)' },
+  HOT:  { icon:'🌶', color:'var(--hot)' },
+  DEAL: { icon:'✈️', color:'var(--deal)' }
 };
-const TIER_ORD = { FLASH:0, HOT:1, DEAL:2 };
+const TORD = { FLASH:0, HOT:1, DEAL:2 };
 
-let allDeals = [];
-let priceMin = 0, priceMax = 9999;
-let activeFilter = 'all';
+let allDeals=[], priceMax=9999, activeF='all';
 
-// ── EXPIRY HELPERS ────────────────────────────────────────
-function expiryPct(deal) {
-  if (!deal.expires_at || !deal.created_at) return 75;
-  const total = new Date(deal.expires_at) - new Date(deal.created_at);
-  const left  = new Date(deal.expires_at) - Date.now();
-  return Math.max(0, Math.min(100, (left/total)*100));
+function expPct(d){
+  if(!d.expires_at||!d.created_at) return 75;
+  const tot=new Date(d.expires_at)-new Date(d.created_at);
+  const rem=new Date(d.expires_at)-Date.now();
+  return Math.max(0,Math.min(100,(rem/tot)*100));
 }
-function expiryColor(pct) {
-  return pct < 20 ? 'var(--red)' : pct < 45 ? 'var(--hot)' : 'var(--green)';
-}
-function expiryHoursLeft(deal) {
-  if (!deal.expires_at) return null;
-  return (new Date(deal.expires_at) - Date.now()) / 3600000;
-}
+function expColor(p){ return p<20?'var(--red)':p<45?'var(--hot)':'var(--green)'; }
+function hoursLeft(d){ return d.expires_at?(new Date(d.expires_at)-Date.now())/3.6e6:null; }
+function sorted(d){ return [...d].sort((a,b)=>{
+  if(TORD[a.deal_tier]!==TORD[b.deal_tier]) return TORD[a.deal_tier]-TORD[b.deal_tier];
+  if(a.origin==='SAT'&&b.origin!=='SAT') return -1;
+  if(b.origin==='SAT'&&a.origin!=='SAT') return 1;
+  return a.price_rt-b.price_rt;
+});}
 
-// ── SORT ──────────────────────────────────────────────────
-function sorted(d) {
-  return [...d].sort((a,b) => {
-    if (TIER_ORD[a.deal_tier] !== TIER_ORD[b.deal_tier]) return TIER_ORD[a.deal_tier] - TIER_ORD[b.deal_tier];
-    if (a.origin==='SAT' && b.origin!=='SAT') return -1;
-    if (b.origin==='SAT' && a.origin!=='SAT') return 1;
-    return a.price_rt - b.price_rt;
-  });
-}
-
-// ── RENDER TABLE ──────────────────────────────────────────
-function renderDeals(deals) {
-  const body = document.getElementById('dealBody');
-  if (!deals.length) {
-    body.innerHTML = `<tr><td colspan="5"><div class="no-results">No deals match this filter.<br><small>Scanner runs every 4 hours — check back soon.</small></div></td></tr>`;
+function renderDeals(deals){
+  const grid=document.getElementById('dealsGrid');
+  if(!deals.length){
+    grid.innerHTML='<div style="grid-column:1/-1"><div class="empty">No deals match this filter.</div></div>';
     return;
   }
-  body.innerHTML = sorted(deals).map(d => {
-    const tc = T[d.deal_tier] || T.DEAL;
-    const pct = expiryPct(d);
-    const ecol = expiryColor(pct);
-    const hoursLeft = expiryHoursLeft(d);
-    const expTag = hoursLeft !== null && hoursLeft < 6
-      ? `<div class="expiry-inline">⏰ ${Math.max(0,Math.round(hoursLeft))}h left</div>`
-      : '';
-    const dEnc = encodeURIComponent(JSON.stringify(d));
-    return `<tr data-tier="${d.deal_tier}" onclick="openModal('${dEnc}')">
-      <td class="td-price">
-        <div class="tier-bdg ${d.deal_tier}">${tc.icon} ${d.deal_tier}</div>
-        <div class="price-main">$${Math.round(d.price_rt)}</div>
-        <div class="price-sub">Round Trip</div>
-        ${expTag}
-      </td>
-      <td>
-        <div class="route-big">${d.origin}<span class="rarrow">→</span>${d.destination}</div>
-        <div class="route-city">${d.destination_city}${d.destination_country ? ', '+d.destination_country : ''}</div>
-        <div class="badge-row">
-          ${d.nonstop ? `<span class="badge ns">✈ Nonstop</span>` : ''}
-          ${d.is_international ? `<span class="badge int">🌴 Intl</span>` : ''}
-          <span class="badge apt">${d.origin}</span>
+  grid.innerHTML=sorted(deals).map(d=>{
+    const p=expPct(d), ec=expColor(p), hl=hoursLeft(d);
+    const expLabel=hl!==null&&hl<6?`⏰ ${Math.max(0,Math.round(hl))}h left`:(hl!==null&&hl<24?`${Math.round(hl)}h remaining`:'Active');
+    const enc=encodeURIComponent(JSON.stringify(d));
+    return `<div class="deal-card" data-tier="${d.deal_tier}" onclick="openModal('${enc}')">
+      <div class="card-photo" style="background-image:url('${img(d.destination)}')">
+        <div class="card-photo-overlay">
+          <div>
+            <div class="card-dest-name">${d.destination_city}</div>
+            <div class="card-dest-sub">${d.origin} → ${d.destination}</div>
+          </div>
         </div>
-      </td>
-      <td>
-        <div class="meta-line" style="color:var(--t2);font-size:12px">
-          <div class="expbar"><div class="expbar-fill" style="width:${pct}%;background:${ecol}"></div></div>
-          <span style="color:${ecol}">${pct<20?'Expiring soon':pct<45?'Limited time':'Active'}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-top">
+          <div>
+            <div class="card-price">$${Math.round(d.price_rt)}</div>
+            <div class="card-price-sub">Round trip</div>
+          </div>
+          <div class="tier-pill ${d.deal_tier}">${TC[d.deal_tier]?.icon||'✈️'} ${d.deal_tier}</div>
         </div>
-        ${d.travel_dates ? `<div class="meta-line">📅 <span style="color:var(--t2)">${d.travel_dates}</span></div>` : ''}
-      </td>
-      <td>
-        <div class="meta-line">✈️ <span style="color:var(--t2)">${d.airline}</span></div>
-        ${d.travel_dates ? `<div class="meta-line">📅 <span style="color:var(--t2)">${d.travel_dates}</span></div>` : ''}
-      </td>
-      <td class="td-action">
-        ${d.discount_pct ? `<div class="savings-pct">−${d.discount_pct}%</div>` : ''}
-        ${d.price_normal ? `<div class="normal-price">was $${Math.round(d.price_normal)}</div>` : ''}
-        <a class="btn-book" href="${d.booking_url}" target="_blank" onclick="event.stopPropagation()">Book →</a>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-// ── FILTER ────────────────────────────────────────────────
-function applyFilters() {
-  let f = allDeals;
-  if (activeFilter === 'FLASH')   f = f.filter(d => d.deal_tier==='FLASH');
-  else if (activeFilter === 'HOT') f = f.filter(d => d.deal_tier==='HOT');
-  else if (activeFilter === 'intl') f = f.filter(d => d.is_international);
-  else if (activeFilter === 'nonstop') f = f.filter(d => d.nonstop);
-  else if (['SAT','AUS','IAH','HOU'].includes(activeFilter)) f = f.filter(d => d.origin===activeFilter);
-  if (priceMax < 9999) f = f.filter(d => d.price_rt <= priceMax);
-  renderDeals(f);
-}
-function filt(type, btn) {
-  document.querySelectorAll('.chip:not(.range)').forEach(c => c.classList.remove('on'));
-  btn.classList.add('on');
-  activeFilter = type;
-  applyFilters();
-}
-function filtPrice(min, max, btn) {
-  priceMin = min; priceMax = max;
-  document.querySelectorAll('.chip.range').forEach(c => c.classList.remove('on'));
-  const clear = document.getElementById('clearRange');
-  if (max < 9999) {
-    btn.classList.add('on');
-    clear.style.display = 'inline-flex';
-  } else {
-    clear.style.display = 'none';
-  }
-  applyFilters();
-}
-
-// ── STATS ─────────────────────────────────────────────────
-function updateStats(deals) {
-  document.getElementById('sFlash').textContent   = deals.filter(d=>d.deal_tier==='FLASH').length;
-  const lo = Math.min(...deals.map(d=>d.price_rt));
-  document.getElementById('sLow').textContent     = lo<9999 ? `$${Math.round(lo)}` : '—';
-  document.getElementById('sExpiring').textContent = deals.filter(d => {
-    const h = expiryHoursLeft(d);
-    return h !== null && h < 8 && h > 0;
-  }).length;
-  document.getElementById('sNonstop').textContent  = deals.filter(d=>d.nonstop).length;
-}
-
-// ── DESTINATION STRIP ─────────────────────────────────────
-function renderDestStrip(deals) {
-  const uniq = {};
-  sorted(deals).forEach(d => { if (!uniq[d.destination]) uniq[d.destination] = d; });
-  const items = Object.values(uniq).slice(0, 10);
-  const tc = T;
-  const html = items.map(d => {
-    const col = (tc[d.deal_tier]||tc.DEAL).color;
-    return `<div class="dest-card" onclick="openModal('${encodeURIComponent(JSON.stringify(d))}')">
-      <div class="dest-bg" style="background-image:url('${destImg(d.destination)}')"></div>
-      <div class="dest-overlay"></div>
-      <div class="dest-info">
-        <div class="dest-code">${d.destination}</div>
-        <div class="dest-price" style="color:${col}">$${Math.round(d.price_rt)} RT · ${d.airline.split(' ')[0]}</div>
+        <div class="card-route">
+          <span class="route-code">${d.origin}</span>
+          <span class="route-arrow">→</span>
+          <span class="route-code">${d.destination}</span>
+        </div>
+        <div class="card-meta">
+          ${d.nonstop?`<span class="meta-pill green">✈ Nonstop</span>`:''}
+          ${d.is_international?`<span class="meta-pill">🌴 Intl</span>`:''}
+          <span class="meta-pill">🛫 ${d.airline.split(' ')[0]}</span>
+          ${d.travel_dates?`<span class="meta-pill">📅 ${d.travel_dates}</span>`:''}
+        </div>
+        <div class="card-expiry">
+          <div class="exp-label"><span>Deal expiry</span><span class="exp-time" style="color:${ec}">${expLabel}</span></div>
+          <div class="expbar"><div class="expbar-fill" style="width:${p}%;background:${ec}"></div></div>
+        </div>
+        <div class="card-footer">
+          <div>
+            ${d.discount_pct?`<div class="card-savings">Save ${d.discount_pct}%</div>`:''}
+            ${d.price_normal?`<div class="card-was">was $${Math.round(d.price_normal)}</div>`:''}
+          </div>
+          <a class="card-btn" href="${d.booking_url}" target="_blank" onclick="event.stopPropagation()">Book →</a>
+        </div>
       </div>
     </div>`;
   }).join('');
-  document.getElementById('destTrack').innerHTML = html + html; // dupe for loop
 }
 
-// ── TICKER UPDATE ─────────────────────────────────────────
-function updateTicker(deals) {
-  const top = sorted(deals).slice(0,12);
-  if (!top.length) return;
-  const html = top.map(d => {
-    const tc = T[d.deal_tier] || T.DEAL;
-    return `<span class="t-item">${tc.icon} ${d.origin} → ${d.destination} <span class="tp">$${Math.round(d.price_rt)}</span>${d.nonstop?' NONSTOP':' RT'}</span>`;
+function applyFilters(){
+  let f=allDeals;
+  if(activeF==='FLASH') f=f.filter(d=>d.deal_tier==='FLASH');
+  else if(activeF==='HOT') f=f.filter(d=>d.deal_tier==='HOT');
+  else if(activeF==='intl') f=f.filter(d=>d.is_international);
+  else if(activeF==='nonstop') f=f.filter(d=>d.nonstop);
+  else if(['SAT','AUS','IAH','HOU'].includes(activeF)) f=f.filter(d=>d.origin===activeF);
+  if(priceMax<9999) f=f.filter(d=>d.price_rt<=priceMax);
+  renderDeals(f);
+}
+function filt(type,btn){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on'); activeF=type; applyFilters();
+}
+function filtPrice(min,max,btn){
+  priceMax=max;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on'); applyFilters();
+}
+
+function updateStats(deals){
+  document.getElementById('sFlash').textContent=deals.filter(d=>d.deal_tier==='FLASH').length;
+  const lo=Math.min(...deals.map(d=>d.price_rt));
+  document.getElementById('sLow').textContent=lo<9999?`$${Math.round(lo)}`:'—';
+  document.getElementById('sExp').textContent=deals.filter(d=>{const h=hoursLeft(d);return h!==null&&h<8&&h>0;}).length;
+  document.getElementById('sNS').textContent=deals.filter(d=>d.nonstop).length;
+}
+
+function renderDestStrip(deals){
+  const uniq={};
+  sorted(deals).forEach(d=>{if(!uniq[d.destination])uniq[d.destination]=d;});
+  const items=Object.values(uniq).slice(0,10);
+  const html=items.map(d=>{
+    const col=(TC[d.deal_tier]||TC.DEAL).color;
+    const enc=encodeURIComponent(JSON.stringify(d));
+    return `<div class="dest-item" onclick="openModal('${enc}')">
+      <div class="dest-bg" style="background-image:url('${img(d.destination)}')"></div>
+      <div class="dest-overlay"></div>
+      <div class="dest-label">
+        <div class="dest-code">${d.destination}</div>
+        <div class="dest-pr" style="color:#ffe066">$${Math.round(d.price_rt)} RT</div>
+      </div>
+    </div>`;
   }).join('');
-  document.getElementById('tickerTrack').innerHTML = html + html;
+  document.getElementById('destTrack').innerHTML=html+html;
 }
 
-// ── MODAL ─────────────────────────────────────────────────
-function openModal(encoded) {
-  const d = JSON.parse(decodeURIComponent(encoded));
-  const tc = T[d.deal_tier] || T.DEAL;
-  const pct = expiryPct(d);
-  const ecol = expiryColor(pct);
-  const hoursLeft = expiryHoursLeft(d);
-  const expText = hoursLeft !== null && hoursLeft > 0
-    ? `${Math.round(hoursLeft)}h remaining`
-    : 'Check current price';
-  const img = destImg(d.destination);
+function updateTicker(deals){
+  const top=sorted(deals).slice(0,10);
+  if(!top.length) return;
+  const html=top.map(d=>`<span class="t-item">${TC[d.deal_tier]?.icon||'✈️'} ${d.origin} → ${d.destination} <span class="tp">$${Math.round(d.price_rt)}</span>${d.nonstop?' Nonstop':''}</span>`).join('');
+  document.getElementById('tickerTrack').innerHTML=html+html;
+}
 
-  document.getElementById('modalInner').innerHTML = `
-    <div class="modal-hero" style="background-image:url('${img}')">
-      <div class="modal-hero-overlay">
+function openModal(enc){
+  const d=JSON.parse(decodeURIComponent(enc));
+  const p=expPct(d), ec=expColor(p), hl=hoursLeft(d);
+  const expText=hl!==null&&hl>0?`${Math.round(hl)}h remaining`:'Verify on Google Flights';
+  const tcol=d.deal_tier==='FLASH'?'flash':d.deal_tier==='HOT'?'hot':'deal';
+  document.getElementById('modalInner').innerHTML=`
+    <div class="modal-img" style="background-image:url('${img(d.destination)}')">
+      <div class="modal-img-overlay">
         <div>
-          <div class="modal-dest-name">${d.destination_city}</div>
-          <div class="modal-dest-sub">${d.origin_city} → ${d.destination_city}${d.destination_country ? ', '+d.destination_country : ''}</div>
+          <div class="modal-city">${d.destination_city}</div>
+          <div class="modal-citysub">${d.origin_city} → ${d.destination_city}${d.destination_country?', '+d.destination_country:''}</div>
         </div>
       </div>
     </div>
     <div class="modal-body">
       <div class="modal-price-row">
-        <div class="modal-price" style="color:${tc.color}"><sup>$</sup>${Math.round(d.price_rt)}</div>
-        ${d.discount_pct && d.price_normal ? `<div class="modal-savings">
-          <div class="modal-pct">−${d.discount_pct}%</div>
-          <div class="modal-was">was $${Math.round(d.price_normal)}</div>
-        </div>` : ''}
+        <div class="modal-price ${tcol}">$${Math.round(d.price_rt)}</div>
+        <div>
+          ${d.price_normal?`<div class="modal-was">was $${Math.round(d.price_normal)}</div>`:''}
+          ${d.discount_pct?`<div class="modal-saved">Save ${d.discount_pct}%</div>`:''}
+        </div>
       </div>
       <div class="modal-expiry">
-        <div class="modal-exp-label">⏱ Deal expires: ${expText}</div>
-        <div class="modal-expbar"><div class="modal-expfill" style="width:${pct}%;background:${ecol}"></div></div>
+        <div class="modal-exp-head"><span>Deal expiry</span><span style="color:${ec};font-weight:700">${expText}</span></div>
+        <div class="modal-expbar"><div class="modal-expfill" style="width:${p}%;background:${ec}"></div></div>
       </div>
-      <div class="modal-data">
-        <div class="modal-row"><span class="mk">Route</span><span class="mv">${d.origin} → ${d.destination}</span></div>
-        <div class="modal-row"><span class="mk">Airline</span><span class="mv">${d.airline}</span></div>
-        ${d.travel_dates ? `<div class="modal-row"><span class="mk">Dates</span><span class="mv">${d.travel_dates}</span></div>` : ''}
-        <div class="modal-row"><span class="mk">Nonstop</span><span class="mv">${d.nonstop?'<span style="color:var(--green)">✅ Yes</span>':'No (connection)'}</span></div>
-        <div class="modal-row"><span class="mk">Type</span><span class="mv">${d.is_international?'🌴 International':'🇺🇸 Domestic'}</span></div>
-        <div class="modal-row"><span class="mk">Tier</span><span class="mv" style="color:${tc.color}">${tc.icon} ${d.deal_tier}</span></div>
+      <div class="modal-grid">
+        <div class="modal-field"><div class="modal-field-label">Route</div><div class="modal-field-val">${d.origin} → ${d.destination}</div></div>
+        <div class="modal-field"><div class="modal-field-label">Airline</div><div class="modal-field-val">${d.airline}</div></div>
+        ${d.travel_dates?`<div class="modal-field"><div class="modal-field-label">Dates</div><div class="modal-field-val">${d.travel_dates}</div></div>`:''}
+        <div class="modal-field"><div class="modal-field-label">Nonstop</div><div class="modal-field-val" style="color:${d.nonstop?'var(--green)':'var(--gray-900)'}">${d.nonstop?'✅ Yes':'No'}</div></div>
       </div>
-      <div class="modal-actions">
-        <a class="modal-book" href="${d.booking_url}" target="_blank">Book on Google Flights →</a>
-        <button class="modal-close-btn" onclick="closeModal()">Close</button>
+      <div class="modal-cta">
+        <a class="btn-modal-book" href="${d.booking_url}" target="_blank">Book on Google Flights →</a>
+        <button class="btn-modal-close" onclick="closeModal()">Close</button>
       </div>
-      <p class="modal-caveat">⚡ Flash prices expire fast. Verify on Google Flights before booking.</p>
     </div>`;
   document.getElementById('modalBg').classList.add('show');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
 }
-function closeModal() {
+function closeModal(){
   document.getElementById('modalBg').classList.remove('show');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';
 }
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
-// ── FALLBACK DATA ─────────────────────────────────────────
-const FALLBACK = [
+const FALLBACK=[
   {id:'f1',origin:'SAT',origin_city:'San Antonio',destination:'LAX',destination_city:'Los Angeles',destination_country:'USA',airline:'Spirit',price_rt:129,price_normal:249,discount_pct:48,travel_dates:'Aug 5–12',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+Los+Angeles',created_at:new Date(Date.now()-3e6).toISOString(),expires_at:new Date(Date.now()+40*3.6e6).toISOString()},
   {id:'f2',origin:'SAT',origin_city:'San Antonio',destination:'DEN',destination_city:'Denver',destination_country:'USA',airline:'Frontier',price_rt:79,price_normal:165,discount_pct:52,travel_dates:'Aug 3–10',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+Denver',created_at:new Date(Date.now()-7.2e6).toISOString(),expires_at:new Date(Date.now()+36*3.6e6).toISOString()},
   {id:'f3',origin:'SAT',origin_city:'San Antonio',destination:'CUN',destination_city:'Cancún',destination_country:'Mexico',airline:'Volaris',price_rt:199,price_normal:420,discount_pct:53,travel_dates:'Sep 1–8',nonstop:true,deal_tier:'FLASH',is_international:true,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+Cancun',created_at:new Date(Date.now()-1.8e6).toISOString(),expires_at:new Date(Date.now()+44*3.6e6).toISOString()},
@@ -1185,40 +910,32 @@ const FALLBACK = [
   {id:'f6',origin:'IAH',origin_city:'Houston',destination:'MEX',destination_city:'Mexico City',destination_country:'Mexico',airline:'Aeromexico',price_rt:149,price_normal:295,discount_pct:49,travel_dates:'Aug 20–27',nonstop:true,deal_tier:'FLASH',is_international:true,booking_url:'https://www.google.com/travel/flights?q=flights+from+Houston+to+Mexico+City',created_at:new Date(Date.now()-3e6).toISOString(),expires_at:new Date(Date.now()+45*3.6e6).toISOString()},
   {id:'f7',origin:'SAT',origin_city:'San Antonio',destination:'JFK',destination_city:'New York',destination_country:'USA',airline:'American Airlines',price_rt:179,price_normal:330,discount_pct:46,travel_dates:'Sep 5–12',nonstop:true,deal_tier:'HOT',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+New+York',created_at:new Date(Date.now()-1.2e7).toISOString(),expires_at:new Date(Date.now()+28*3.6e6).toISOString()},
   {id:'f8',origin:'AUS',origin_city:'Austin',destination:'SJU',destination_city:'San Juan',destination_country:'Puerto Rico',airline:'JetBlue',price_rt:189,price_normal:350,discount_pct:46,travel_dates:'Aug 22–29',nonstop:false,deal_tier:'HOT',is_international:true,booking_url:'https://www.google.com/travel/flights?q=flights+from+Austin+to+San+Juan',created_at:new Date(Date.now()-1.8e7).toISOString(),expires_at:new Date(Date.now()+22*3.6e6).toISOString()},
-  {id:'f9',origin:'IAH',origin_city:'Houston',destination:'SJU',destination_city:'San Juan',destination_country:'Puerto Rico',airline:'United',price_rt:209,price_normal:390,discount_pct:46,travel_dates:'Aug 22–29',nonstop:false,deal_tier:'HOT',is_international:true,booking_url:'https://www.google.com/travel/flights?q=flights+from+Houston+to+San+Juan',created_at:new Date(Date.now()-2.16e7).toISOString(),expires_at:new Date(Date.now()+18*3.6e6).toISOString()},
-  {id:'f10',origin:'SAT',origin_city:'San Antonio',destination:'GDL',destination_city:'Guadalajara',destination_country:'Mexico',airline:'Volaris',price_rt:109,price_normal:240,discount_pct:55,travel_dates:'Sep 10–17',nonstop:true,deal_tier:'FLASH',is_international:true,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+Guadalajara',created_at:new Date(Date.now()-7.2e6).toISOString(),expires_at:new Date(Date.now()+38*3.6e6).toISOString()},
+  {id:'f9',origin:'SAT',origin_city:'San Antonio',destination:'GDL',destination_city:'Guadalajara',destination_country:'Mexico',airline:'Volaris',price_rt:109,price_normal:240,discount_pct:55,travel_dates:'Sep 10–17',nonstop:true,deal_tier:'FLASH',is_international:true,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+Guadalajara',created_at:new Date(Date.now()-7.2e6).toISOString(),expires_at:new Date(Date.now()+38*3.6e6).toISOString()},
+  {id:'f10',origin:'HOU',origin_city:'Houston Hobby',destination:'MIA',destination_city:'Miami',destination_country:'USA',airline:'Southwest',price_rt:109,price_normal:210,discount_pct:48,travel_dates:'Aug 9–16',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+Houston+to+Miami',created_at:new Date(Date.now()-5.4e6).toISOString(),expires_at:new Date(Date.now()+35*3.6e6).toISOString()},
   {id:'f11',origin:'SAT',origin_city:'San Antonio',destination:'ORD',destination_city:'Chicago',destination_country:'USA',airline:'Spirit',price_rt:159,price_normal:295,discount_pct:46,travel_dates:'Aug 15–22',nonstop:true,deal_tier:'HOT',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+San+Antonio+to+Chicago',created_at:new Date(Date.now()-1.44e7).toISOString(),expires_at:new Date(Date.now()+30*3.6e6).toISOString()},
-  {id:'f12',origin:'HOU',origin_city:'Houston Hobby',destination:'MIA',destination_city:'Miami',destination_country:'USA',airline:'Southwest',price_rt:109,price_normal:210,discount_pct:48,travel_dates:'Aug 9–16',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+Houston+to+Miami',created_at:new Date(Date.now()-5.4e6).toISOString(),expires_at:new Date(Date.now()+35*3.6e6).toISOString()},
+  {id:'f12',origin:'AUS',origin_city:'Austin',destination:'DEN',destination_city:'Denver',destination_country:'USA',airline:'Southwest',price_rt:79,price_normal:160,discount_pct:51,travel_dates:'Aug 12–19',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.google.com/travel/flights?q=flights+from+Austin+to+Denver',created_at:new Date(Date.now()-2.16e7).toISOString(),expires_at:new Date(Date.now()+24*3.6e6).toISOString()},
 ];
 
-// ── LOAD ──────────────────────────────────────────────────
-async function load() {
+async function load(){
   try {
-    const r = await fetch('/deals.json?t=' + Date.now());
-    const d = await r.json();
-    allDeals = d?.deals?.length ? d.deals : FALLBACK;
-    if (d?.generated_at) {
-      const t = new Date(d.generated_at);
-      document.getElementById('sScan').textContent =
-        t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const r=await fetch('/deals.json?t='+Date.now());
+    const d=await r.json();
+    allDeals=d?.deals?.length?d.deals:FALLBACK;
+    if(d?.generated_at){
+      const t=new Date(d.generated_at);
+      document.getElementById('sScan').textContent=t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
     }
-  } catch(e) {
-    allDeals = FALLBACK;
-  }
+  } catch(e){ allDeals=FALLBACK; }
   renderDeals(allDeals);
   renderDestStrip(allDeals);
   updateStats(allDeals);
   updateTicker(allDeals);
 }
 
-// ── SCROLL REVEAL ─────────────────────────────────────────
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
-}, { threshold: 0.05 });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.05});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-// ── INIT ──────────────────────────────────────────────────
-window.addEventListener('load', load);
+window.addEventListener('load',load);
 </script>
 </body>
 </html>
