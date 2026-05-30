@@ -1,0 +1,9 @@
+{
+  "name": "flashfly",
+  "version": "1.0.0",
+  "description": "Automated flash flight deal detection from SAT, AUS, IAH",
+  "type": "module",
+  "scripts": {
+    "scan": "node api/scanner.mjs"
+  }
+}

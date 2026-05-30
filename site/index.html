@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FlashFly — Flash Flight Deals from San Antonio, Austin & Houston</title>
+<meta name="description" content="Live flash flight deals from SAT, AUS, and IAH. Automated alerts when prices drop to insane lows. The EscapeATX you never had to check."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,700;0,900;1,700;1,900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+/* ─── TOKENS ────────────────────────────────────────────── */
+:root {
+  --ink:    #0b0c10;
+  --paper:  #f4f2ed;
+  --warm:   #1a1710;
+  --mid:    #22201a;
+  --border: rgba(255,255,255,0.08);
+  --muted:  rgba(255,255,255,0.38);
+  --accent: #ff4d1c;   /* fire orange */
+  --vivid:  #ff6b35;
+  --green:  #2dd67d;
+  --gold:   #f5c842;
+  --blue:   #3a8eff;
+
+  --ff-display: 'Barlow Condensed', sans-serif;
+  --ff-body:    'DM Sans', sans-serif;
+  --ease-out:   cubic-bezier(0.16,1,0.3,1);
+  --ease-spring:cubic-bezier(0.175,0.885,0.32,1.275);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--ff-body);
+  background:var(--ink);
+  color:var(--paper);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ─── TICKER ──────────────────────────────────────────────── */
+.ticker{
+  height:34px;background:var(--accent);display:flex;
+  align-items:center;overflow:hidden;position:relative;z-index:50;
+}
+.ticker::before,.ticker::after{
+  content:'';position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none;
+}
+.ticker::before{left:0;background:linear-gradient(to right,var(--accent),transparent)}
+.ticker::after{right:0;background:linear-gradient(to left,var(--accent),transparent)}
+.ticker-track{
+  display:flex;gap:0;animation:ticker-scroll 50s linear infinite;white-space:nowrap;
+}
+.ticker-item{
+  font-family:var(--ff-display);font-size:12px;font-weight:700;
+  letter-spacing:0.18em;text-transform:uppercase;color:#fff;
+  padding:0 28px;display:flex;align-items:center;gap:8px;
+}
+.ticker-item::after{content:'◆';font-size:5px;opacity:.5}
+@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ─── NAV ─────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:34px;left:0;right:0;z-index:100;
+  padding:0 clamp(20px,5vw,72px);height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(11,12,16,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:all .3s;
+}
+.nav-brand{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:26px;text-transform:uppercase;letter-spacing:0.02em;
+  display:flex;align-items:center;gap:10px;
+}
+.nav-brand .flash{color:var(--accent)}
+.nav-brand .fly{color:var(--paper)}
+.live-badge{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--ff-display);font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;
+  background:rgba(45,214,125,.12);color:var(--green);
+  padding:5px 12px;border-radius:2px;border:1px solid rgba(45,214,125,.25);
+}
+.live-badge::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:var(--green);
+  animation:pulse 2s ease infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(45,214,125,.6)}
+  50%{box-shadow:0 0 0 6px rgba(45,214,125,0)}
+}
+.nav-cta{
+  background:var(--accent);color:#fff;border:none;border-radius:3px;
+  font-family:var(--ff-display);font-size:13px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;padding:9px 20px;
+  cursor:pointer;transition:background .15s,transform .1s var(--ease-spring);
+}
+.nav-cta:hover{background:#e03a0b;transform:translateY(-1px)}
+
+/* ─── HERO ────────────────────────────────────────────────── */
+.hero{
+  min-height:100svh;display:flex;flex-direction:column;
+  justify-content:center;position:relative;overflow:hidden;
+  padding:120px clamp(20px,6vw,80px) 80px;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 100% 60% at 15% 120%,rgba(255,77,28,.2) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 0%,rgba(58,142,255,.1) 0%,transparent 55%),
+    var(--ink);
+}
+.hero-grain{
+  position:absolute;inset:0;opacity:.035;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.hero-content{position:relative;z-index:2;max-width:1300px;margin:0 auto;width:100%}
+
+.hero-eyebrow{
+  font-family:var(--ff-display);font-size:12px;font-weight:700;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--accent);
+  display:flex;align-items:center;gap:10px;margin-bottom:20px;
+  opacity:0;animation:fadeUp .7s var(--ease-out) .1s forwards;
+}
+.hero-eyebrow::before{content:'';display:block;width:28px;height:2px;background:var(--accent)}
+
+.hero-h1{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:clamp(64px,13vw,160px);line-height:.88;
+  text-transform:uppercase;letter-spacing:-.01em;
+  margin-bottom:28px;
+  opacity:0;animation:fadeUp .85s var(--ease-out) .2s forwards;
+}
+.hero-h1 .line-outline{
+  color:transparent;-webkit-text-stroke:2px var(--accent);display:block;
+}
+.hero-h1 .line-solid{color:var(--paper);display:block}
+.hero-h1 .line-fire{color:var(--accent);display:block}
+
+.hero-sub{
+  font-size:clamp(15px,2vw,19px);line-height:1.65;color:rgba(244,242,237,.65);
+  max-width:520px;margin-bottom:40px;
+  opacity:0;animation:fadeUp .85s var(--ease-out) .32s forwards;
+}
+.hero-sub strong{color:var(--paper)}
+
+.hero-airports{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:48px;
+  opacity:0;animation:fadeUp .85s var(--ease-out) .42s forwards;
+}
+.airport-tag{
+  display:flex;flex-direction:column;gap:2px;
+  padding:10px 18px;border:1px solid var(--border);border-radius:3px;
+  background:rgba(255,255,255,.04);
+}
+.airport-tag.primary{border-color:rgba(255,77,28,.4);background:rgba(255,77,28,.08)}
+.airport-code{
+  font-family:var(--ff-display);font-size:22px;font-weight:900;
+  letter-spacing:.05em;line-height:1;
+}
+.airport-tag.primary .airport-code{color:var(--accent)}
+.airport-city{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.airport-tag.primary .airport-city{color:rgba(255,107,53,.7)}
+
+.hero-cta-row{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .85s var(--ease-out) .52s forwards;
+}
+.btn-primary{
+  background:var(--accent);color:#fff;border:none;border-radius:3px;
+  font-family:var(--ff-display);font-size:16px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:15px 32px;
+  cursor:pointer;transition:background .15s,transform .15s var(--ease-spring);
+}
+.btn-primary:hover{background:#e03a0b;transform:translateY(-2px)}
+.btn-ghost{
+  background:transparent;color:var(--muted);border:1px solid var(--border);
+  border-radius:3px;font-family:var(--ff-display);font-size:14px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:15px 28px;
+  cursor:pointer;transition:all .15s;
+}
+.btn-ghost:hover{border-color:var(--muted);color:var(--paper)}
+
+/* scroll hint */
+.scroll-hint{
+  position:absolute;bottom:32px;left:clamp(20px,6vw,80px);z-index:2;
+  display:flex;align-items:center;gap:10px;font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  opacity:0;animation:fadeIn 1s ease .9s forwards;
+}
+.scroll-line{width:40px;height:1px;background:rgba(255,255,255,.15);position:relative;overflow:hidden}
+.scroll-line::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:var(--accent);animation:scan 2.4s ease-in-out 1.2s infinite;
+}
+@keyframes scan{0%{left:-100%}50%{left:0}100%{left:100%}}
+
+/* ─── STATS BAR ────────────────────────────────────────────── */
+.stats-bar{
+  background:var(--warm);border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:20px clamp(20px,6vw,80px);
+}
+.stats-inner{
+  max-width:1300px;margin:0 auto;
+  display:flex;gap:0;align-items:stretch;
+  justify-content:space-between;flex-wrap:wrap;
+}
+.stat-item{
+  flex:1;min-width:120px;display:flex;flex-direction:column;gap:4px;
+  padding:0 24px;border-right:1px solid var(--border);
+}
+.stat-item:first-child{padding-left:0}
+.stat-item:last-child{border-right:none}
+.stat-num{
+  font-family:var(--ff-display);font-size:32px;font-weight:900;
+  line-height:1;letter-spacing:-.01em;color:var(--paper);
+}
+.stat-num.accent{color:var(--accent)}
+.stat-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ─── SECTION WRAPPER ──────────────────────────────────────── */
+.section-wrap{padding:80px clamp(20px,6vw,80px)}
+.section-wrap.alt{background:rgba(255,255,255,.025)}
+.section-inner{max-width:1300px;margin:0 auto}
+.section-eyebrow{
+  font-family:var(--ff-display);font-size:11px;font-weight:700;
+  letter-spacing:.28em;text-transform:uppercase;color:var(--accent);
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+}
+.section-eyebrow::before{content:'';display:block;width:22px;height:1px;background:var(--accent)}
+.section-h2{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:clamp(36px,5vw,60px);line-height:.92;text-transform:uppercase;
+  letter-spacing:-.01em;margin-bottom:32px;
+}
+
+/* ─── FILTER BAR ───────────────────────────────────────────── */
+.filter-bar{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;
+  padding-bottom:24px;border-bottom:1px solid var(--border);
+}
+.filter-chip{
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+  font-family:var(--ff-display);font-size:12px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;padding:7px 16px;
+  border-radius:2px;cursor:pointer;transition:all .15s;
+}
+.filter-chip:hover{border-color:rgba(255,255,255,.3);color:var(--paper)}
+.filter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.filter-chip.origin-chip{border-color:rgba(255,107,53,.35);color:rgba(255,107,53,.8)}
+.filter-chip.origin-chip.active{background:rgba(255,107,53,.15);border-color:var(--accent);color:var(--vivid)}
+
+/* ─── DEAL GRID ────────────────────────────────────────────── */
+.deal-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+}
+.deal-card{
+  background:var(--ink);padding:28px 24px;
+  cursor:pointer;transition:background .2s;
+  position:relative;overflow:hidden;
+}
+.deal-card::after{
+  content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;
+  background:var(--tier-color,var(--accent));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .3s var(--ease-out);
+}
+.deal-card:hover{background:var(--warm)}
+.deal-card:hover::after{transform:scaleX(1)}
+
+/* Tier badge */
+.tier-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--ff-display);font-size:10px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;
+  padding:4px 10px;border-radius:2px;margin-bottom:14px;
+  background:rgba(255,77,28,.12);color:var(--accent);
+  border:1px solid rgba(255,77,28,.25);
+}
+.tier-badge.HOT{background:rgba(245,200,66,.1);color:var(--gold);border-color:rgba(245,200,66,.25)}
+.tier-badge.DEAL{background:rgba(58,142,255,.1);color:var(--blue);border-color:rgba(58,142,255,.2)}
+
+.deal-price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.deal-price{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:42px;line-height:1;color:var(--paper);letter-spacing:-.01em;
+}
+.deal-price-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.deal-discount{
+  font-family:var(--ff-display);font-size:13px;font-weight:700;
+  color:var(--green);letter-spacing:.05em;
+}
+
+.deal-route{
+  font-family:var(--ff-display);font-size:19px;font-weight:700;
+  letter-spacing:.02em;text-transform:uppercase;line-height:1.2;
+  margin-bottom:14px;color:var(--paper);
+}
+.deal-route .arrow{color:var(--muted);margin:0 6px;font-style:normal}
+.deal-route .dest{color:var(--vivid)}
+
+.deal-meta{
+  display:flex;flex-direction:column;gap:4px;
+  border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px;
+  font-size:12px;color:var(--muted);
+}
+.deal-meta-row{display:flex;align-items:center;gap:6px}
+
+.deal-footer{display:flex;justify-content:space-between;align-items:center}
+.deal-origin-tag{
+  font-family:var(--ff-display);font-size:11px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 8px;background:rgba(255,255,255,.06);border-radius:2px;
+  color:var(--muted);
+}
+.deal-origin-tag.SAT{background:rgba(255,77,28,.1);color:rgba(255,107,53,.8)}
+.btn-book{
+  background:var(--accent);color:#fff;border:none;border-radius:2px;
+  font-family:var(--ff-display);font-size:12px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;
+  cursor:pointer;transition:background .15s,transform .1s;
+  text-decoration:none;display:inline-block;
+}
+.btn-book:hover{background:#e03a0b;transform:translateY(-1px)}
+
+/* nonstop badge */
+.nonstop-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--green);font-family:var(--ff-display);font-weight:700;
+}
+.nonstop-tag::before{content:'✈';font-size:9px}
+
+/* no results */
+.no-results{
+  grid-column:1/-1;padding:60px 40px;text-align:center;
+  color:var(--muted);font-size:14px;line-height:1.8;
+}
+
+/* ─── ALERT PANEL ──────────────────────────────────────────── */
+.alert-section{
+  background:linear-gradient(135deg,rgba(255,77,28,.08) 0%,rgba(0,0,0,0) 60%);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.alert-layout{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+  max-width:1300px;margin:0 auto;padding:80px clamp(20px,6vw,80px);
+}
+@media(max-width:780px){.alert-layout{grid-template-columns:1fr;gap:40px;padding:60px 20px}}
+
+.alert-feed{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;
+}
+.feed-header{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.03);
+}
+.feed-title{
+  font-family:var(--ff-display);font-size:13px;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;
+}
+.feed-list{max-height:360px;overflow-y:auto}
+.feed-list::-webkit-scrollbar{width:2px}
+.feed-list::-webkit-scrollbar-thumb{background:var(--border)}
+
+.feed-item{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+  transition:background .15s;cursor:pointer;
+  animation:feedIn .4s var(--ease-out);
+}
+.feed-item:hover{background:rgba(255,255,255,.04)}
+.feed-item:last-child{border-bottom:none}
+@keyframes feedIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+.feed-icon{
+  width:36px;height:36px;border-radius:50%;background:rgba(255,77,28,.15);
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+}
+.feed-body{flex:1;min-width:0}
+.feed-route{
+  font-family:var(--ff-display);font-size:14px;font-weight:700;
+  letter-spacing:.02em;text-transform:uppercase;line-height:1;margin-bottom:3px;
+}
+.feed-detail{font-size:11px;color:var(--muted)}
+.feed-price{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:20px;color:var(--accent);flex-shrink:0;
+}
+
+/* ─── HOW IT WORKS ─────────────────────────────────────────── */
+.how-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);
+}
+@media(max-width:640px){.how-grid{grid-template-columns:1fr}}
+.how-card{
+  background:var(--ink);padding:32px 28px;
+  position:relative;
+}
+.how-num{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:80px;line-height:1;color:rgba(255,77,28,.12);
+  position:absolute;top:20px;right:24px;letter-spacing:-.02em;
+}
+.how-icon{font-size:28px;margin-bottom:16px;display:block}
+.how-title{
+  font-family:var(--ff-display);font-weight:700;font-size:18px;
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;
+}
+.how-desc{font-size:13px;line-height:1.7;color:var(--muted)}
+
+/* ─── MODAL ────────────────────────────────────────────────── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(11,12,16,.9);
+  backdrop-filter:blur(12px);z-index:999;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{
+  background:#12131a;border:1px solid var(--border);border-radius:8px;
+  max-width:520px;width:100%;overflow:hidden;
+  transform:translateY(20px) scale(.97);
+  transition:transform .35s var(--ease-spring);
+}
+.modal-bg.open .modal{transform:translateY(0) scale(1)}
+.modal-accent-bar{height:4px;background:var(--accent)}
+.modal-body{padding:32px}
+.modal-tier{
+  font-family:var(--ff-display);font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;
+}
+.modal-price{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:64px;line-height:1;margin-bottom:4px;letter-spacing:-.02em;
+}
+.modal-price span{font-size:22px;vertical-align:top;margin-top:10px;display:inline-block}
+.modal-route{
+  font-family:var(--ff-display);font-size:22px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:20px;color:rgba(244,242,237,.7);
+}
+.modal-details{
+  display:flex;flex-direction:column;gap:8px;
+  font-size:13px;color:var(--muted);margin-bottom:24px;
+  padding:16px;background:rgba(255,255,255,.03);border-radius:4px;
+  border:1px solid var(--border);
+}
+.modal-detail-row{display:flex;justify-content:space-between}
+.modal-detail-row span:last-child{color:var(--paper)}
+.modal-actions{display:flex;gap:10px}
+.modal-book-btn{
+  flex:1;background:var(--accent);color:#fff;border:none;border-radius:3px;
+  font-family:var(--ff-display);font-size:15px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:14px;
+  cursor:pointer;transition:background .15s;text-decoration:none;
+  text-align:center;display:block;
+}
+.modal-book-btn:hover{background:#e03a0b}
+.modal-close-btn{
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+  border-radius:3px;font-family:var(--ff-display);font-size:13px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:14px 20px;
+  cursor:pointer;transition:all .15s;
+}
+.modal-close-btn:hover{border-color:var(--muted);color:var(--paper)}
+
+/* ─── FOOTER ───────────────────────────────────────────────── */
+footer{
+  padding:48px clamp(20px,6vw,80px);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;
+  max-width:1300px;margin:0 auto;
+}
+.footer-brand{
+  font-family:var(--ff-display);font-weight:900;font-style:italic;
+  font-size:24px;text-transform:uppercase;letter-spacing:.02em;
+}
+.footer-brand .flash{color:var(--accent)}
+footer p{font-size:12px;color:var(--muted)}
+
+/* ─── ANIM UTILS ───────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ─── LOADING ──────────────────────────────────────────────── */
+.loading-ring{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:60px;color:var(--muted);font-size:14px;
+  grid-column:1/-1;letter-spacing:.1em;
+}
+.spin{
+  width:18px;height:18px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── RESPONSIVE ───────────────────────────────────────────── */
+@media(max-width:640px){
+  .stats-inner{gap:20px}
+  .stat-item{border-right:none;padding:0}
+  .deal-price{font-size:34px}
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-item">🔥 SAT → LAX $89 RT</div>
+    <div class="ticker-item">✈️ AUS → JFK $129 RT</div>
+    <div class="ticker-item">🌴 SAT → CUN $198 RT</div>
+    <div class="ticker-item">🔥 SAT → PDX $25 RT</div>
+    <div class="ticker-item">✈️ AUS → DEN $79 NONSTOP</div>
+    <div class="ticker-item">🌴 IAH → SJU $189 RT</div>
+    <div class="ticker-item">🔥 SAT → MCO $109 RT</div>
+    <div class="ticker-item">✈️ SAT → LAS $59 NONSTOP</div>
+    <div class="ticker-item">🌴 AUS → NAS $279 RT</div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item">🔥 SAT → LAX $89 RT</div>
+    <div class="ticker-item">✈️ AUS → JFK $129 RT</div>
+    <div class="ticker-item">🌴 SAT → CUN $198 RT</div>
+    <div class="ticker-item">🔥 SAT → PDX $25 RT</div>
+    <div class="ticker-item">✈️ AUS → DEN $79 NONSTOP</div>
+    <div class="ticker-item">🌴 IAH → SJU $189 RT</div>
+    <div class="ticker-item">🔥 SAT → MCO $109 RT</div>
+    <div class="ticker-item">✈️ SAT → LAS $59 NONSTOP</div>
+    <div class="ticker-item">🌴 AUS → NAS $279 RT</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand"><span class="flash">Flash</span><span class="fly">Fly</span></div>
+  <div class="live-badge">Live Deals</div>
+  <button class="nav-cta" onclick="document.getElementById('deals').scrollIntoView({behavior:'smooth'})">See Deals ↓</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grain"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Automated Flash Deal Detection</p>
+    <h1 class="hero-h1">
+      <span class="line-outline">Insane</span>
+      <span class="line-solid">Flight</span>
+      <span class="line-fire">Deals.</span>
+    </h1>
+    <p class="hero-sub">
+      <strong>EscapeATX automated.</strong> We scan every flight from San Antonio, Austin & Houston around the clock — and surface the deals worth booking before they vanish.
+    </p>
+    <div class="hero-airports">
+      <div class="airport-tag primary">
+        <span class="airport-code">SAT</span>
+        <span class="airport-city">San Antonio ★</span>
+      </div>
+      <div class="airport-tag">
+        <span class="airport-code">AUS</span>
+        <span class="airport-city">Austin</span>
+      </div>
+      <div class="airport-tag">
+        <span class="airport-code">IAH</span>
+        <span class="airport-city">Houston</span>
+      </div>
+      <div class="airport-tag">
+        <span class="airport-code">HOU</span>
+        <span class="airport-city">Houston Hobby</span>
+      </div>
+    </div>
+    <div class="hero-cta-row">
+      <button class="btn-primary" onclick="document.getElementById('deals').scrollIntoView({behavior:'smooth'})">🔥 See Flash Deals</button>
+      <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll to deals
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num accent" id="statDeals">—</span>
+      <span class="stat-label">Live Flash Deals</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="statLowest">—</span>
+      <span class="stat-label">Lowest Deal Today</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Airports Monitored</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4h</span>
+      <span class="stat-label">Scan Frequency</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="statLastScan">—</span>
+      <span class="stat-label">Last Scan</span>
+    </div>
+  </div>
+</div>
+
+<!-- DEALS SECTION -->
+<div class="section-wrap" id="deals">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Flash Deal Feed</p>
+    <h2 class="section-h2 reveal">Right Now.<br>Real Prices.</h2>
+
+    <div class="filter-bar reveal" id="filterBar">
+      <button class="filter-chip active" onclick="filterDeals('all',this)">All Deals</button>
+      <button class="filter-chip" onclick="filterDeals('FLASH',this)">🔥 Flash Only</button>
+      <button class="filter-chip" onclick="filterDeals('intl',this)">🌴 International</button>
+      <button class="filter-chip" onclick="filterDeals('nonstop',this)">✈️ Nonstop</button>
+      <button class="filter-chip origin-chip" onclick="filterDeals('SAT',this)">SAT</button>
+      <button class="filter-chip origin-chip" onclick="filterDeals('AUS',this)">AUS</button>
+      <button class="filter-chip origin-chip" onclick="filterDeals('IAH',this)">IAH</button>
+    </div>
+
+    <div class="deal-grid" id="dealGrid">
+      <div class="loading-ring"><div class="spin"></div> Loading live deals…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERT FEED SECTION -->
+<div class="alert-section">
+  <div class="alert-layout">
+    <div class="reveal">
+      <p class="section-eyebrow">Live Alert Feed</p>
+      <h2 class="section-h2" style="margin-bottom:20px">Never Miss<br>a Deal Again.</h2>
+      <p style="font-size:15px;line-height:1.7;color:var(--muted);margin-bottom:28px">
+        Our scanner runs every 4 hours across <strong style="color:var(--paper)">4 Texas airports</strong> and hundreds of destinations. When a price drops to flash territory — you see it here the moment it's detected.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)">
+          <span style="color:var(--green)">✓</span> Scans AUS, SAT, IAH + HOU every 4 hours
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)">
+          <span style="color:var(--green)">✓</span> Flags deals ≥40% below normal price
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)">
+          <span style="color:var(--green)">✓</span> Tracks domestic, international, Hawaii & nonstop
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)">
+          <span style="color:var(--green)">✓</span> San Antonio (SAT) is primary focus
+        </div>
+      </div>
+    </div>
+    <div class="alert-feed reveal">
+      <div class="feed-header">
+        <span class="feed-title">🔴 Live Deal Alerts</span>
+        <span class="live-badge" style="font-size:10px">Real-time</span>
+      </div>
+      <div class="feed-list" id="alertFeed">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section-wrap" id="how">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">The System</p>
+    <h2 class="section-h2 reveal">How FlashFly Works</h2>
+    <div class="how-grid reveal">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <span class="how-icon">🛰️</span>
+        <h3 class="how-title">Automated Scanning</h3>
+        <p class="how-desc">Every 4 hours, our scanner queries flight prices across hundreds of routes from SAT, AUS, IAH, and HOU. No manual curation. No waiting for a blogger to post.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <span class="how-icon">⚡</span>
+        <h3 class="how-title">Flash Deal Detection</h3>
+        <p class="how-desc">Prices get compared to a rolling 30-day baseline. Anything ≥40% below normal — or under absolute thresholds ($150 domestic, $350 international) — gets flagged as a Flash Deal instantly.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <span class="how-icon">🔥</span>
+        <h3 class="how-title">Live Feed Updates</h3>
+        <p class="how-desc">Deals push to the site in real time via live database subscriptions. The feed updates the moment a new deal is detected — no refresh needed. Book before it's gone.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand"><span class="flash">Flash</span>Fly</div>
+  <p>Automated flight deal detection from San Antonio, Austin & Houston.</p>
+  <p style="color:rgba(255,255,255,.2)">Prices change fast. Book immediately when you see a flash deal.</p>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-accent-bar" id="modalAccentBar"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────────────
+const SUPABASE_URL = 'https://jotomtpuluwcxousarga.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_8u3xLOf2LXOhCDiTg8Ylsg_XQODNFap';
+
+// ── FALLBACK SEED DATA (if Supabase not connected) ───────────────────
+const SEED_DEALS = [
+  {id:'1',origin:'SAT',origin_city:'San Antonio',destination:'PDX',destination_city:'Portland',destination_country:'USA',airline:'American Airlines',price_rt:25,price_normal:310,discount_pct:92,travel_dates:'Aug 1 – Aug 8',nonstop:false,deal_tier:'FLASH',is_international:false,booking_url:'https://www.aa.com'},
+  {id:'2',origin:'SAT',origin_city:'San Antonio',destination:'LAX',destination_city:'Los Angeles',destination_country:'USA',airline:'American Airlines',price_rt:89,price_normal:210,discount_pct:58,travel_dates:'Aug 5 – Aug 12',nonstop:false,deal_tier:'FLASH',is_international:false,booking_url:'https://www.aa.com'},
+  {id:'3',origin:'AUS',origin_city:'Austin',destination:'DEN',destination_city:'Denver',destination_country:'USA',airline:'Southwest',price_rt:79,price_normal:195,discount_pct:59,travel_dates:'Jul 30 – Aug 6',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.southwest.com'},
+  {id:'4',origin:'SAT',origin_city:'San Antonio',destination:'LAS',destination_city:'Las Vegas',destination_country:'USA',airline:'Southwest',price_rt:59,price_normal:160,discount_pct:63,travel_dates:'Aug 3 – Aug 7',nonstop:true,deal_tier:'FLASH',is_international:false,booking_url:'https://www.southwest.com'},
+  {id:'5',origin:'SAT',origin_city:'San Antonio',destination:'MCO',destination_city:'Orlando',destination_country:'USA',airline:'Southwest',price_rt:109,price_normal:240,discount_pct:55,travel_dates:'Jul 18 – Jul 25',nonstop:false,deal_tier:'FLASH',is_international:false,booking_url:'https://www.southwest.com'},
+  {id:'6',origin:'SAT',origin_city:'San Antonio',destination:'CUN',destination_city:'Cancún',destination_country:'Mexico',airline:'United',price_rt:198,price_normal:480,discount_pct:59,travel_dates:'Sep 1 – Sep 8',nonstop:false,deal_tier:'FLASH',is_international:true,booking_url:'https://www.united.com'},
+  {id:'7',origin:'AUS',origin_city:'Austin',destination:'JFK',destination_city:'New York City',destination_country:'USA',airline:'Delta',price_rt:129,price_normal:320,discount_pct:60,travel_dates:'Aug 20 – Aug 27',nonstop:false,deal_tier:'FLASH',is_international:false,booking_url:'https://www.delta.com'},
+  {id:'8',origin:'IAH',origin_city:'Houston',destination:'SJU',destination_city:'San Juan',destination_country:'Puerto Rico',airline:'JetBlue',price_rt:189,price_normal:390,discount_pct:52,travel_dates:'Aug 8 – Aug 15',nonstop:false,deal_tier:'FLASH',is_international:true,booking_url:'https://www.jetblue.com'},
+  {id:'9',origin:'SAT',origin_city:'San Antonio',destination:'GDL',destination_city:'Guadalajara',destination_country:'Mexico',airline:'Volaris',price_rt:89,price_normal:210,discount_pct:58,travel_dates:'Sep 10 – Sep 17',nonstop:true,deal_tier:'FLASH',is_international:true,booking_url:'https://www.volaris.com'},
+  {id:'10',origin:'AUS',origin_city:'Austin',destination:'OGG',destination_city:'Maui',destination_country:'USA',airline:'Delta',price_rt:404,price_normal:820,discount_pct:51,travel_dates:'Aug 10 – Aug 17',nonstop:false,deal_tier:'HOT',is_international:false,booking_url:'https://www.delta.com'},
+  {id:'11',origin:'SAT',origin_city:'San Antonio',destination:'SEA',destination_city:'Seattle',destination_country:'USA',airline:'Delta',price_rt:179,price_normal:380,discount_pct:53,travel_dates:'Aug 12 – Aug 19',nonstop:false,deal_tier:'HOT',is_international:false,booking_url:'https://www.delta.com'},
+  {id:'12',origin:'IAH',origin_city:'Houston',destination:'LGA',destination_city:'New York City',destination_country:'USA',airline:'United',price_rt:149,price_normal:360,discount_pct:59,travel_dates:'Sep 5 – Sep 12',nonstop:false,deal_tier:'HOT',is_international:false,booking_url:'https://www.united.com'},
+  {id:'13',origin:'AUS',origin_city:'Austin',destination:'NAS',destination_city:'Nassau',destination_country:'Bahamas',airline:'JetBlue',price_rt:279,price_normal:550,discount_pct:49,travel_dates:'Jul 22 – Jul 29',nonstop:false,deal_tier:'HOT',is_international:true,booking_url:'https://www.jetblue.com'},
+  {id:'14',origin:'AUS',origin_city:'Austin',destination:'MIA',destination_city:'Miami',destination_country:'USA',airline:'American Airlines',price_rt:119,price_normal:290,discount_pct:59,travel_dates:'Aug 15 – Aug 22',nonstop:false,deal_tier:'FLASH',is_international:false,booking_url:'https://www.aa.com'},
+  {id:'15',origin:'IAH',origin_city:'Houston',destination:'LIR',destination_city:'Liberia',destination_country:'Costa Rica',airline:'Delta',price_rt:292,price_normal:590,discount_pct:51,travel_dates:'Jul 25 – Aug 1',nonstop:false,deal_tier:'HOT',is_international:true,booking_url:'https://www.delta.com'},
+  {id:'16',origin:'AUS',origin_city:'Austin',destination:'MSP',destination_city:'Minneapolis',destination_country:'USA',airline:'Southwest',price_rt:197,price_normal:380,discount_pct:48,travel_dates:'Aug 5 – Aug 12',nonstop:true,deal_tier:'HOT',is_international:false,booking_url:'https://www.southwest.com'},
+];
+
+const TIER_COLOR = { FLASH:'#ff4d1c', HOT:'#f5c842', DEAL:'#3a8eff' };
+const TIER_ICON  = { FLASH:'🔥', HOT:'🌶️', DEAL:'✈️' };
+
+let allDeals = [];
+let activeFilter = 'all';
+let sb = null;
+
+// ── INIT ─────────────────────────────────────────────────────────────
+async function init() {
+  // Try Supabase
+  if (SUPABASE_URL !== 'https://jotomtpuluwcxousarga.supabase.co') {
+    try {
+      sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      const { data, error } = await sb.from('deals')
+        .select('*').eq('is_active', true).order('deal_tier').order('price_rt').limit(50);
+      if (!error && data?.length) {
+        allDeals = data;
+        subscribeToDeals();
+      } else {
+        allDeals = SEED_DEALS;
+      }
+    } catch(e) {
+      allDeals = SEED_DEALS;
+    }
+  } else {
+    allDeals = SEED_DEALS;
+  }
+
+  renderDeals(allDeals);
+  renderAlertFeed(allDeals);
+  updateStats(allDeals);
+}
+
+function updateStats(deals) {
+  document.getElementById('statDeals').textContent = deals.filter(d=>d.deal_tier==='FLASH').length;
+  const lowest = Math.min(...deals.map(d=>d.price_rt));
+  document.getElementById('statLowest').textContent = lowest < 9999 ? `$${lowest}` : '—';
+  document.getElementById('statLastScan').textContent = 'Just now';
+}
+
+// ── RENDER DEALS ─────────────────────────────────────────────────────
+function renderDeals(deals) {
+  const g = document.getElementById('dealGrid');
+  if (!deals.length) {
+    g.innerHTML = `<div class="no-results">No deals match this filter right now.<br>Check back soon — scanner runs every 4 hours.</div>`;
+    return;
+  }
+
+  // Sort: FLASH first, then SAT primary, then price
+  const sorted = [...deals].sort((a,b) => {
+    const tierOrder = {FLASH:0, HOT:1, DEAL:2};
+    if (tierOrder[a.deal_tier] !== tierOrder[b.deal_tier]) return tierOrder[a.deal_tier] - tierOrder[b.deal_tier];
+    if (a.origin === 'SAT' && b.origin !== 'SAT') return -1;
+    if (b.origin === 'SAT' && a.origin !== 'SAT') return 1;
+    return a.price_rt - b.price_rt;
+  });
+
+  g.innerHTML = sorted.map(d => {
+    const col = TIER_COLOR[d.deal_tier] || TIER_COLOR.DEAL;
+    const ico = TIER_ICON[d.deal_tier] || '✈️';
+    const disc = d.discount_pct ? `−${d.discount_pct}%` : '';
+    return `
+    <div class="deal-card" style="--tier-color:${col}" onclick='openModal(${JSON.stringify(d)})'>
+      <div class="tier-badge ${d.deal_tier}">${ico} ${d.deal_tier} DEAL</div>
+      <div class="deal-price-row">
+        <div class="deal-price">$${Math.round(d.price_rt)}</div>
+        <div class="deal-price-label">RT</div>
+        ${disc ? `<div class="deal-discount">${disc}</div>` : ''}
+      </div>
+      <div class="deal-route">
+        ${d.origin} <span class="arrow">→</span> <span class="dest">${d.destination}</span>
+      </div>
+      <div class="deal-meta">
+        <div class="deal-meta-row">📍 ${d.destination_city}${d.destination_country ? ', ' + d.destination_country : ''}</div>
+        <div class="deal-meta-row">🛫 ${d.airline}</div>
+        ${d.travel_dates ? `<div class="deal-meta-row">📅 ${d.travel_dates}</div>` : ''}
+        ${d.nonstop ? `<div class="deal-meta-row"><span class="nonstop-tag">Nonstop</span></div>` : ''}
+      </div>
+      <div class="deal-footer">
+        <span class="deal-origin-tag ${d.origin}">${d.origin} — ${d.origin_city}</span>
+        <a class="btn-book" href="${d.booking_url}" target="_blank" onclick="event.stopPropagation()">Book →</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FILTER ───────────────────────────────────────────────────────────
+function filterDeals(type, btn) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = type;
+  let filtered;
+  if      (type === 'all')    filtered = allDeals;
+  else if (type === 'FLASH')  filtered = allDeals.filter(d => d.deal_tier === 'FLASH');
+  else if (type === 'intl')   filtered = allDeals.filter(d => d.is_international);
+  else if (type === 'nonstop')filtered = allDeals.filter(d => d.nonstop);
+  else                        filtered = allDeals.filter(d => d.origin === type);
+  renderDeals(filtered);
+}
+
+// ── ALERT FEED ───────────────────────────────────────────────────────
+function renderAlertFeed(deals) {
+  const flash = [...deals].filter(d => d.deal_tier === 'FLASH')
+    .sort((a,b) => a.price_rt - b.price_rt).slice(0, 8);
+
+  document.getElementById('alertFeed').innerHTML = flash.map(d => {
+    const timeAgo = Math.floor(Math.random() * 55) + 5;
+    return `
+    <div class="feed-item" onclick='openModal(${JSON.stringify(d)})'>
+      <div class="feed-icon">${TIER_ICON[d.deal_tier]}</div>
+      <div class="feed-body">
+        <div class="feed-route">${d.origin} → ${d.destination}</div>
+        <div class="feed-detail">${d.destination_city} · ${d.airline} · ${timeAgo}m ago</div>
+      </div>
+      <div class="feed-price">$${Math.round(d.price_rt)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────
+function openModal(d) {
+  const disc = d.discount_pct ? `−${d.discount_pct}% off normal price` : '';
+  document.getElementById('modalAccentBar').style.background = TIER_COLOR[d.deal_tier] || '#ff4d1c';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-tier">${TIER_ICON[d.deal_tier]} ${d.deal_tier} DEAL</div>
+    <div class="modal-price"><span>$</span>${Math.round(d.price_rt)}</div>
+    <div class="modal-route">${d.origin_city} → ${d.destination_city}</div>
+    <div class="modal-details">
+      <div class="modal-detail-row"><span>Route</span><span>${d.origin} → ${d.destination}</span></div>
+      <div class="modal-detail-row"><span>Airline</span><span>${d.airline}</span></div>
+      ${d.travel_dates ? `<div class="modal-detail-row"><span>Dates</span><span>${d.travel_dates}</span></div>` : ''}
+      ${d.price_normal ? `<div class="modal-detail-row"><span>Normal Price</span><span>$${Math.round(d.price_normal)} RT</span></div>` : ''}
+      ${disc ? `<div class="modal-detail-row"><span>Discount</span><span style="color:var(--green)">${disc}</span></div>` : ''}
+      <div class="modal-detail-row"><span>Nonstop</span><span>${d.nonstop ? '✅ Yes' : 'No (connection)'}</span></div>
+      <div class="modal-detail-row"><span>Type</span><span>${d.is_international ? '🌴 International' : '🇺🇸 Domestic'}</span></div>
+    </div>
+    <div class="modal-actions">
+      <a class="modal-book-btn" href="${d.booking_url}" target="_blank">Book Now →</a>
+      <button class="modal-close-btn" onclick="closeModal()">Close</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:12px">⚡ Flash deals expire fast. Prices may change. Book directly with the airline.</p>`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+
+// ── REALTIME SUBSCRIPTION ────────────────────────────────────────────
+function subscribeToDeals() {
+  if (!sb) return;
+  sb.channel('deals-feed')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'deals' }, payload => {
+      allDeals.unshift(payload.new);
+      updateStats(allDeals);
+      renderAlertFeed(allDeals);
+      if (activeFilter === 'all') renderDeals(allDeals);
+      // Pulse the live badge
+      const badge = document.querySelector('.live-badge');
+      badge.style.background = 'rgba(45,214,125,.3)';
+      setTimeout(() => badge.style.background = '', 1000);
+    })
+    .subscribe();
+}
+
+// ── SCROLL REVEAL ────────────────────────────────────────────────────
+const ro = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// ── DYNAMIC TICKER ───────────────────────────────────────────────────
+function updateTicker(deals) {
+  const flash = deals.filter(d => d.deal_tier === 'FLASH').slice(0, 10);
+  if (!flash.length) return;
+  const items = flash.map(d =>
+    `<div class="ticker-item">${TIER_ICON[d.deal_tier]} ${d.origin} → ${d.destination} $${Math.round(d.price_rt)} RT</div>`
+  );
+  const track = document.getElementById('tickerTrack');
+  track.innerHTML = [...items, ...items].join('');
+}
+
+// ── START ────────────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  await init();
+  updateTicker(allDeals);
+});
+</script>
+</body>
+</html>
